@@ -219,4 +219,36 @@ export class BookListComponent implements OnInit {
     });
   }
  
+  //phân trang
+  currentPage: number = 1; 
+  pageSize: number = 8; 
+  paginatedBooks: any[] = []; 
+  totalPages: number = 1; 
+
+  loadBooks(): void {
+    this.bookService.getBooks().subscribe({
+      next: (data) => {
+        console.log('Dữ liệu từ API:', data);
+        this.books = data;
+        this.totalPages = Math.ceil(this.books.length / this.pageSize);
+        this.updatePagination();
+      },
+      error: (err) => {
+        console.error('lỗi khi gọi api', err);
+      }
+    })
+  }
+
+  updatePagination(): void {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedBooks = this.books.slice(startIndex, endIndex);
+  }
+  
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+  
+    this.currentPage = page;
+    this.updatePagination();
+  }
 }

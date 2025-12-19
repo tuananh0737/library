@@ -1,86 +1,105 @@
-body {
-  padding-top: 56px;
+/* Để sử dụng icon của Bootstrap, hãy thêm link này vào index.html: */
+/* <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> */
+
+/* Biến màu để dễ dàng tùy chỉnh */
+:root {
+  --sidebar-bg: #FFFFFF;
+  --sidebar-width: 260px;
+  --link-color: #8A8A8A;
+  --link-hover-bg: #F0F5FF;
+  --link-active-color: #4A69FF;
+  --brand-color: #333333;
+  --content-bg: #F7F7F7;
 }
 
-.navbar {
-  position: fixed; 
-  top: 0;        
-  left: 0;        
-  width: 100%;     
-  z-index: 1030;  
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+/* Container chính cho toàn bộ trang */
+.page-container {
+  min-height: 100vh;
 }
 
-.content {
-  margin-top: 56px; 
+/* Định dạng cho Sidebar */
+/* File: src/styles.css */
+
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background-color: var(--sidebar-bg);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #EAEAEA;
+  
+  /* === CÁC THAY ĐỔI QUAN TRỌNG === */
+  position: fixed; /* MỚI: Cố định sidebar vào khung nhìn (viewport) */
+  top: 0;          /* MỚI: Căn lề trên cùng */
+  left: 0;         /* MỚI: Căn lề trái cùng */
+  height: 100vh;   /* MỚI: Chiều cao bằng 100% chiều cao màn hình */
+  overflow-y: auto;/* MỚI: Tự động thêm thanh cuộn cho sidebar nếu nội dung của nó quá dài */
 }
 
-
-.nav-link {
-  color: #ffffff !important;
-  transition: background-color 0.3s;
+/* Định dạng cho logo/brand ở trên cùng */
+.sidebar .sidebar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--brand-color);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
-.navbar-collapse {
-  text-align: right ;
+.sidebar .sidebar-brand i {
+  margin-right: 10px;
+  color: var(--link-active-color);
 }
 
-.navbar-toggler {
-  justify-content: flex-start;
+/* Định dạng cho các mục trong menu */
+.sidebar .nav-item {
+  margin-bottom: 0.5rem;
 }
 
-.navbar-nav {
-  align-items: flex-start;
+.sidebar .nav-link {
+  color: var(--link-color);
+  font-weight: 500;
+  padding: 12px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.nav-link:hover {
-  background-color: #a1c6a7 !important;
-  border-radius: 4px;
+/* Icon bên trong link */
+.sidebar .nav-link i {
+  margin-right: 15px;
+  font-size: 1.2rem;
+  width: 20px; /* Căn chỉnh vị trí text */
 }
 
-.navbar .dropdown-menu {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-}
-
-.dropdown-item {
-  padding: 10px;
+/* Hiệu ứng khi hover */
+.sidebar .nav-link:hover {
+  background-color: var(--link-hover-bg);
+  color: var(--link-active-color);
   cursor: pointer;
 }
 
-.dropdown-item:hover {
-  background-color: #f8f9fa;
+/* Định dạng cho link đang được active */
+.sidebar .nav-link.active {
+  background-color: var(--link-hover-bg);
+  color: var(--link-active-color);
+  font-weight: 600;
 }
 
-.text-muted {
-  font-size: 12px;
+/* Đẩy các mục dưới cùng (Logout, Settings) xuống đáy */
+.sidebar .mt-auto {
+    margin-top: auto;
 }
 
-.nav-link {
-  text-align: right;
-}
-
-.navbar {
-  background-color: #2fb746 !important;
-}
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.overlay-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 300px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+/* Vùng nội dung chính */
+.content-area {
+  flex-grow: 1;
+  background-color: var(--content-bg);
+  padding: 2rem;
+  overflow-y: auto;
+  
+  margin-left: var(--sidebar-width); 
 }

@@ -6,11 +6,12 @@
               <input
                 type="text"
                 class="form-control"
-                placeholder="Tìm kiếm sách..."
+                placeholder="Nhập tên sách, tác giả..."
                 [(ngModel)]="searchQuery"
-                (keyup.enter)="searchBooks()"
+                (ngModelChange)="onSearchQueryChange(searchQuery)"
               />
-              <button class="btn btn-primary" (click)="searchBooks()">Tìm kiếm</button>
+
+              <button class="btn btn-primary" (click)="onSearchQueryChange(searchQuery)">Tìm kiếm</button>
             </div>
           </div>
         </div>

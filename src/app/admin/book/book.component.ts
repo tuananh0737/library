@@ -18,6 +18,12 @@ interface Book {
     id: number; 
     name: string;
   };
+  qrCode: string;
+  location: {
+    id: number; 
+    room: string;
+    shelf: string;
+  };
 }
 
 
@@ -47,7 +53,9 @@ export class BookComponent implements OnInit {
     description: '',
     quantity: 0,
     author: { id: 0, fullname: '', nationality: '' },
-    genres: { id: 0, name: '' }
+    genres: { id: 0, name: '' },
+    qrCode: '',
+    location: { id: 0, room: '', shelf: ''}
   };
 
   constructor(
@@ -58,6 +66,16 @@ export class BookComponent implements OnInit {
   ngOnInit(): void {
     this.loadBooks();
     this.loadAuthorsAndGenres();
+
+    this.bookService.getBooks().subscribe({
+      next: (data) => {
+        this.books = data;
+        this.originalBooks = [...data];
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi API:', err);
+      }
+    });
   }
 
 
@@ -167,7 +185,7 @@ export class BookComponent implements OnInit {
       return;
     }
 
-    this.books = this.originalBooks.filter((book) =>
+    this.books = this.originalBooks.filter(book =>
       book.name.toLowerCase().includes(query) ||
       book.author.fullname.toLowerCase().includes(query) ||
       book.genres.name.toLowerCase().includes(query)
@@ -287,6 +305,8 @@ export class BookComponent implements OnInit {
       quantity: 0,
       author: { id: 0, fullname: '', nationality: '' },
       genres: { id: 0, name: '' },
+      qrCode: '',
+      location: { id: 0, room: '', shelf: ''}
     };
   }
   

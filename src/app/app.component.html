@@ -1,191 +1,128 @@
-<div>
-<nav *ngIf="userRole === 'ROLE_USER'" class="navbar navbar-expand-lg navbar-dark bg-success">
-	<div class="container-fluid">
-	  <a class="navbar-brand" routerLink="/home">Bookreads</a>
-	  <button
-		class="navbar-toggler"
-		type="button"
-		data-bs-toggle="collapse"
-		data-bs-target="#userNavbar"
-		aria-controls="userNavbar"
-		aria-expanded="false"
-		aria-label="Toggle navigation"
-	  >
-		<span class="navbar-toggler-icon"></span>
-	  </button>
-	  <div class="collapse navbar-collapse" id="userNavbar">
-		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/mybook">Danh sách yêu thích</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/borrow">Sách đã mượn</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/booklist">Tìm kiếm</a>
-		  </li>
-		  <li class="nav-item" *ngIf="!isLoggedIn">
-			<a class="nav-link" routerLink="/login">Đăng nhập</a>
-		  </li>
-		  <li class="nav-item" *ngIf="!isLoggedIn">
-			<a class="nav-link" routerLink="/sign-up">Đăng kí</a>
-		  </li>
-		  
-		  <li class="nav-item dropdown" *ngIf="isLoggedIn">
-			<a  class="nav-link dropdown-toggle" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"	>
-			<img src="assets/notification.png" alt="Edit" style="width: 20px;">
-			<!-- <span *ngIf="notifications.length > 0">({{ notifications.length }})</span> -->
-			</a>
-			<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
-			  <li *ngIf="notifications.length > 0; else noNotifications">
-				<div *ngFor="let notification of notifications" class="dropdown-item" (click)="goToBorrowedBook(notification.bookId)">
-					<div class="fw-bold">{{ notification.content }}</div>
-					<div class="text-muted">{{ formatDate(notification.createdDate) }}</div>
-				  </div>				  
-			  </li>
-			  <ng-template #noNotifications>
-				<li class="dropdown-item text-muted">Không có thông báo.</li>
-			  </ng-template>
-			</ul>
-		  </li>
-		  
-		  <li class="nav-item dropdown" *ngIf="isLoggedIn">
-			<a
-			  class="nav-link dropdown-toggle"
-			  id="userDropdown"
-			  role="button"
-			  data-bs-toggle="dropdown"
-			  aria-expanded="false"
-			>
-			<img src="assets/user.png" alt="Edit" style="width: 20px;">
+<div class="page-container">
 
+	<div class="sidebar" *ngIf="userRole === 'ROLE_USER' || userRole === 'ROLE_ADMIN' || userRole === 'ROLE_LIBRARIAN'">
+	  <a class="sidebar-brand" routerLink="/home">
+		<i class="bi bi-book-half"></i> 
+		BookReads
+	  </a>
+	  
+	  <ul class="nav flex-column">
+		<ng-container *ngIf="userRole === 'ROLE_USER'">
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/mybook" routerLinkActive="active">
+			  <i class="bi bi-heart-fill"></i> Danh sách yêu thích
 			</a>
-			<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-			  <li>
-				<a class="dropdown-item" routerLink="/user-info">Thông tin cá nhân</a>
-			  </li>
-			  <li>
-				<a class="dropdown-item" routerLink="/comment">Đánh giá</a>
-			  </li>
-			  <li>
-				<a class="dropdown-item" (click)="openChangePasswordForm()">Đổi mật khẩu</a>
-			  </li>
-			  <li>
-				<hr class="dropdown-divider">
-			  </li>
-			  <li>
-				<a class="dropdown-item" (click)="logout()">Logout</a>
-			  </li>
-			</ul>
 		  </li>
-		</ul>
-	  </div>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/borrow" routerLinkActive="active">
+			  <i class="bi bi-journal-arrow-down"></i> Sách đã mượn
+			</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/booklist" routerLinkActive="active">
+			  <i class="bi bi-search"></i> Tìm kiếm
+			</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/ebook" routerLinkActive="active">
+			  <i class="bi bi-collection-fill"></i> Thư viện trực tuyến
+			</a>
+		  </li>
+		</ng-container>
+  
+		<ng-container *ngIf="userRole === 'ROLE_ADMIN'">
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/admin/admin-home" routerLinkActive="active">
+			  <i class="bi bi-house-door-fill"></i> Home
+			</a>
+		  </li>
+		  <li class="nav-item">
+			  <a class="nav-link" routerLink="/librarian/deCodeQR" routerLinkActive="active">
+				  <i class="bi bi-qr-code-scan"></i> Quét mã QR
+			  </a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/admin/user" routerLinkActive="active">
+			  <i class="bi bi-people-fill"></i> Người đọc
+			</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/admin/librarian" routerLinkActive="active">
+			  <i class="bi bi-person-badge-fill"></i> Thủ thư
+			</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/admin/book" routerLinkActive="active">
+			  <i class="bi bi-book-fill"></i> Sách
+			</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/admin/author" routerLinkActive="active">
+			  <i class="bi bi-pen-fill"></i> Tác giả
+			</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" routerLink="/admin/genre" routerLinkActive="active">
+			  <i class="bi bi-tag-fill"></i> Thể loại
+			</a>
+		  </li>
+		</ng-container>
+  
+		<ng-container *ngIf="userRole === 'ROLE_LIBRARIAN'">
+		  <li class="nav-item">
+			  <a class="nav-link" routerLink="/librarian/book" routerLinkActive="active">
+				  <i class="bi bi-book-fill"></i> Sách
+			  </a>
+		  </li>
+		  <li class="nav-item">
+			  <a class="nav-link" routerLink="/librarian/borrow" routerLinkActive="active">
+				  <i class="bi bi-arrow-return-left"></i> Trả sách
+			  </a>
+		  </li>
+		  <li class="nav-item">
+			  <a class="nav-link" routerLink="/librarian/deCodeQR" routerLinkActive="active">
+				  <i class="bi bi-qr-code-scan"></i> Quét mã QR
+			  </a>
+		  </li>
+		</ng-container>
+	  </ul>
+  
+	  <ul class="nav flex-column mt-auto">
+		 <ng-container *ngIf="isLoggedIn">
+		  <li class="nav-item">
+			  <a class="nav-link" routerLink="/user-info" routerLinkActive="active">
+				  <i class="bi bi-person-circle"></i> Thông tin cá nhân
+			  </a>
+		  </li>
+		  <li class="nav-item">
+			  <a class="nav-link" (click)="logout()">
+				  <i class="bi bi-box-arrow-right"></i> Đăng xuất
+			  </a>
+		  </li>
+		 </ng-container>
+  
+		 <ng-container *ngIf="!isLoggedIn">
+		  <li class="nav-item">
+			  <a class="nav-link" routerLink="/login" routerLinkActive="active">
+				  <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+			  </a>
+		  </li>
+		  <li class="nav-item">
+			  <a class="nav-link" routerLink="/sign-up" routerLinkActive="active">
+				  <i class="bi bi-person-plus-fill"></i> Đăng kí
+			  </a>
+		  </li>
+		 </ng-container>
+	  </ul>
 	</div>
-  </nav>
-  <div *ngIf="overlay" class="overlay d-flex align-items-center justify-content-center">
-	<div class="card p-4 shadow-lg" style="width: 400px;">
-	  <h3 class="text-center">Đổi mật khẩu</h3>
-	  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-	  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-	  <form (submit)="changePassword(); $event.preventDefault()">
-		<div class="mb-3">
-		  <label for="oldPassword" class="form-label">Mật khẩu cũ</label>
-		  <input type="password" id="oldPassword" [(ngModel)]="oldPassword" name="oldPassword" class="form-control" required>
-		</div>
-		<div class="mb-3">
-		  <label for="newPassword" class="form-label">Mật khẩu mới</label>
-		  <input type="password" id="newPassword" [(ngModel)]="newPassword" name="newPassword" class="form-control" required>
-		</div>
-		<div class="mb-3">
-		  <label for="reEnterNewPassword" class="form-label">Nhập lại mật khẩu mới</label>
-		  <input type="password" id="reEnterNewPassword" [(ngModel)]="reEnterNewPassword" name="reEnterNewPassword" class="form-control" required>
-		</div>
-		<button type="submit" class="btn btn-primary w-100">Đổi mật khẩu</button>
-		<button type="button" class="btn btn-secondary w-100 mt-2" (click)="closeChangePasswordForm()">Hủy</button>
-	  </form>
+  
+	<div class="content-area">
+	  <router-outlet></router-outlet>
 	</div>
+  
   </div>
   
-  
-
-  <nav *ngIf="userRole === 'ROLE_ADMIN'" class="navbar navbar-expand-lg navbar-dark bg-primary">
-	<div class="container-fluid">
-	  <a class="navbar-brand" routerLink="/admin/admin-home">Bookreads</a>
-	  <button
-		class="navbar-toggler"
-		type="button"
-		data-bs-toggle="collapse"
-		data-bs-target="#adminNavbar"
-		aria-controls="adminNavbar"
-		aria-expanded="false"
-		aria-label="Toggle navigation"
-	  >
-		<span class="navbar-toggler-icon"></span>
-	  </button>
-	  <div class="collapse navbar-collapse" id="adminNavbar">
-		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/admin-home">Home</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/librarian/deCodeQR">Quét mã QR</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/user">Người đọc</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/librarian">Thủ thư</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/book">Sách </a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/author">Tác giả</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/genre">Thể loại</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" (click)="logout()">Đăng xuất</a>
-		  </li>
-		</ul>
-	  </div>
+  <div *ngIf="overlay" class="overlay d-flex align-items-center justify-content-center">
 	</div>
-  </nav>
-<nav *ngIf="userRole === 'ROLE_LIBRARIAN'" class="navbar navbar-expand-lg navbar-dark bg-success">
-	<a class="navbar-brand" routerLink="/home">Bookreads</a>
-	  <button
-		class="navbar-toggler"
-		type="button"
-		data-bs-toggle="collapse"
-		data-bs-target="#userNavbar"
-		aria-controls="userNavbar"
-		aria-expanded="false"
-		aria-label="Toggle navigation"
-	  ><span class="navbar-toggler-icon"></span>
-	</button>
-	<div class="container-fluid">
-		<div class="collapse navbar-collapse" id="adminNavbar">
-		  <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-			<li class="nav-item">
-			  <a class="nav-link" routerLink="/librarian/book">Sách</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" routerLink="/librarian/borrow">Trả sách</a>
-			  </li>
-			<li class="nav-item">
-			  <a class="nav-link" routerLink="/librarian/deCodeQR">Quét mà QR</a>
-			</li>
-			<li class="nav-item">
-			  <a class="nav-link" (click)="logout()">Đăng xuất</a>
-			</li>
-		  </ul>
-		</div>
-	  </div>
-	</nav>
-</div>
 
-<div class="content">
-	<router-outlet></router-outlet>
-</div>
 	  

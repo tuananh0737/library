@@ -27,8 +27,8 @@
       </div>
 
       <button type="submit" class="sign-up-btn" [disabled]="loading || password !== reEnterPassword">
-        <span *ngIf="loading">Đang đăng kí</span>
-        <span *ngIf="!loading">Đăng kí </span>
+        <span *ngIf="loading">Đang đăng ký</span>
+        <span *ngIf="!loading">Đăng ký </span>
       </button>
       <p>Bạn đã có tài khoản ?<a routerLink="/login">Đăng nhập</a></p>
     </form>
@@ -37,7 +37,7 @@
 
 <div *ngIf="showOverlay" class="overlay">
   <div class="overlay-content">
-    <h3>Đăng kí thành công</h3>
+    <h3>Đăng ký thành công</h3>
     <button (click)="redirectToLogin()" class="overlay-btn">Đến đăng nhập</button>
   </div>
 </div>

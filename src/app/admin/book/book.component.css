@@ -54,3 +54,75 @@ button.btn {
   justify-content: center;
   gap: 5px; 
 }
+h2 {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  position: relative;
+  text-align: center;
+  color: #007bff;
+}
+
+h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #007bff, #00d4ff, #007bff);
+  animation: shine 2s linear infinite;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.img-fluid {
+  max-width: 150px;
+  height: auto;
+  margin-top: 10px;
+  text-align: center;
+}
+
+
+.book-details-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem; 
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.book-details-grid .label {
+  font-weight: bold;
+  color: #007bff;
+  text-align: right; 
+}
+
+.book-details-grid .value {
+  color: #343a40;
+  text-align: left /* Căn trái cho giá trị */
+}
+
+.card-body {
+  padding: 1.5rem;
+  background-color: #f8f9fa; 
+  border-radius: 8px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+.card-header {
+  text-align: center;
+  background-color: #007bff; 
+  color: white;
+  font-weight: bold;
+  font-size: 1.25rem;
+  border-radius: 8px 8px 0 0; 
+}

@@ -1,12 +1,12 @@
 <div class="login-container">
   <div class="login-box">
     <h2>Đăng nhập </h2>
-    <p>Bạn không có tài khoản ? <a routerLink="/sign-up">Đăng kí</a></p>
+    <p>Bạn không có tài khoản ? <a routerLink="/sign-up">Đăng ký</a></p>
 
     <form (ngSubmit)="onLogin()">
       <div class="form-group">
         <label for="username">Tài khoản </label>
-        <input type="email" id="username" [(ngModel)]="username" name="username" placeholder="Enter your email" required />
+        <input type="email" id="username" [(ngModel)]="username" name="username" placeholder="Enter your username" required />
       </div>
 
       <div class="form-group">

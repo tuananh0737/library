@@ -136,8 +136,8 @@ p {
 
 .book-details-grid {
   display: grid;
-  grid-template-columns: auto 1fr; /* Cột 1 là nhãn, cột 2 là giá trị */
-  gap: 0.5rem 1rem; /* Khoảng cách giữa các hàng và cột */
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem; 
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -145,26 +145,26 @@ p {
 .book-details-grid .label {
   font-weight: bold;
   color: #007bff;
-  text-align: right; /* Căn phải cho nhãn */
+  text-align: right; 
 }
 
 .book-details-grid .value {
   color: #343a40;
-  text-align: left; /* Căn trái cho giá trị */
+  text-align: left /* Căn trái cho giá trị */
 }
 
 .card-body {
-  padding: 1.5rem; /* Thêm padding tổng thể */
-  background-color: #f8f9fa; /* Nền sáng */
-  border-radius: 8px; /* Bo góc */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Hiệu ứng bóng */
+  padding: 1.5rem;
+  background-color: #f8f9fa; 
+  border-radius: 8px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
 }
 
 .card-header {
   text-align: center;
-  background-color: #007bff; /* Màu xanh tiêu đề */
+  background-color: #007bff; 
   color: white;
   font-weight: bold;
   font-size: 1.25rem;
-  border-radius: 8px 8px 0 0; /* Bo góc chỉ trên cùng */
+  border-radius: 8px 8px 0 0; 
 }

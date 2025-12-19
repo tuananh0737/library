@@ -10,7 +10,7 @@
   
         <div *ngIf="borrowBooks && borrowBooks.length > 0" class="list-group">
           <div *ngFor="let borrowBook of borrowBooks" [id]="'book-' + borrowBook.book.id" class="list-group-item">
-            <h5 class="mb-2">{{ borrowBook.book.name }}</h5>
+            <h3 class="mb-2">{{ borrowBook.book.name }}</h3>
             <p class="mb-1"><strong>Tác giả:</strong> {{ borrowBook.book.author.fullname }}</p>
             <p class="mb-1"><strong>Thể loại:</strong> {{ borrowBook.book.genres.name.trim() }}</p>
             <p class="mb-1"><strong>Năm xuất bản:</strong> {{ borrowBook.book.publishYear }}</p>

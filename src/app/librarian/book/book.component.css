@@ -54,4 +54,34 @@
     justify-content: center;
     gap: 5px; 
   }
+
+  h2 {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    position: relative;
+    text-align: center;
+    color: #007bff;
+  }
+  
+  h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #007bff, #00d4ff, #007bff);
+    animation: shine 2s linear infinite;
+  }
+  
+  @keyframes shine {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 100% 50%;
+    }
+  }
   

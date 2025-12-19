@@ -1,7 +1,7 @@
 <div class="container mt-5">
-    <h2 class="text-center mb-5">Thông tin mượn sách</h2>
-  
-    <!-- Button mở modal chọn người dùng -->
+  <h2 class="text-center mb-4 position-relative">
+    <span class="title-decoration">Thông tin mượn sách</span>
+  </h2>  
     <div class="row justify-content-center">
       <div class="col-lg-6 col-md-8 text-center">
         <button class="btn btn-primary mb-4" (click)="openUserSelector()">
@@ -14,13 +14,13 @@
     <div *ngIf="isUserSelectorVisible" class="modal fade show d-block" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header bg-primary text-white">
             <h5 class="modal-title">Chọn người dùng</h5>
-            <button type="button" class="btn-close" (click)="closeUserSelector()"></button>
+            <button type="button" class="btn-close btn-close-white" (click)="closeUserSelector()"></button>
           </div>
           <div class="modal-body">
             <!-- Input tìm kiếm -->
-            <div class="input-group mb-3">
+            <div class="input-group mb-4">
               <input
                 type="text"
                 class="form-control"
@@ -29,34 +29,35 @@
               />
               <button class="btn btn-primary" (click)="searchUsers()">Tìm kiếm</button>
             </div>
-  
+    
             <!-- Hiển thị danh sách người dùng sau khi tìm kiếm -->
             <div *ngIf="users.length > 0" class="list-group">
               <button
                 type="button"
                 class="list-group-item list-group-item-action"
+                [class.active]="user.id === selectedUserId"
                 *ngFor="let user of users"
                 (click)="selectUser(user)"
               >
-                {{ user.fullname }} - {{ user.idCard }} - {{ user.phone }}
+                {{ user.fullname }} - <span class="text-muted">{{ user.idCard }}</span> - {{ user.phone }}
               </button>
             </div>
-  
+    
             <!-- Thông báo không có người dùng -->
             <div *ngIf="users.length === 0">
-              <p class="text-center text-muted">Không tìm thấy người dùng.</p>
+              <p class="text-center text-muted fst-italic">Không tìm thấy người dùng.</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  
+    
     <!-- Thông tin người dùng được chọn -->
     <div class="row justify-content-center" *ngIf="selectedUserId">
       <div class="col-lg-6 col-md-8 text-center">
-        <p class="mb-3">
-          <strong>Người dùng:</strong> {{ selectedUserName }}
-        </p>
+        <div class="alert alert-info p-3 shadow-sm">
+          <p class="mb-2"><strong>Người dùng:</strong> {{ selectedUserName }}</p>
+        </div>
         <button class="btn btn-success" (click)="fetchBorrowBooks()">Tìm kiếm sách đã mượn</button>
       </div>
     </div>
