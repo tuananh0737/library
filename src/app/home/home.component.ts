@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { BookService } from '../services/book.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -8,55 +8,73 @@ import { Router } from '@angular/router';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  books: any[] = [];
-  genres: any[] = [];
+  books: any[] = [];          // Dữ liệu gốc từ API
+  filteredBooks: any[] = [];  // Dữ liệu hiển thị ra màn hình
   selectedBook: any = null;
+  
+  searchQuery: string = '';
+  activeCategory: string = 'All';
 
-  constructor(private router: Router ,private http: HttpClient) {}
+  // Danh sách thể loại (Cần khớp với dữ liệu trong database hoặc load từ API)
+  categories = ['All', 'Kinh dị', 'Khoa học', 'Văn học', 'Lịch sử', 'Công nghệ', 'Tiểu thuyết'];
+
+  constructor(private bookService: BookService, private router: Router) { }
 
   ngOnInit(): void {
-    this.fetchBooks();
-    this.fetchGenres();
-  }
-
-  fetchBooks(): void {
-    const apiUrl = '/api/public/books-by-rating';
-    this.http.get<any[]>(apiUrl).subscribe({
-      next: (response) => {
-        this.books = response.slice(0, 4); 
+    this.bookService.getBooks().subscribe({
+      next: (data) => {
+        this.books = data;
+        this.filteredBooks = data; // Ban đầu hiển thị tất cả
+        
+        // Mặc định chọn cuốn đầu tiên nếu có
+        if (this.books.length > 0) {
+          this.selectBook(this.books[0]);
+        }
       },
-      error: (error) => {
-        console.error('Error fetching books:', error);
-      }
+      error: (err) => console.error(err)
     });
   }
 
-  showBookDetails(book: any) {
+  selectBook(book: any): void {
     this.selectedBook = book;
   }
 
-  closeForm(): void {
-    this.selectedBook = null; 
+  // 1. Hàm xử lý khi người dùng nhập tìm kiếm
+  onSearch() {
+    this.applyFilters(); 
   }
 
-  fetchGenres(): void {
-    const apiUrl = '/api/public/find-all-genres';
-    this.http.get<any[]>(apiUrl).subscribe({
-      next: (response) => {
-        this.genres = this.shuffleArray(response).slice(0, 6);
-      },
-      error: (error) => {
-        console.error('Error fetching genres:', error);
-      }
-    });
+  // 2. Hàm xử lý khi người dùng chọn thể loại
+  filterCategory(cat: string) {
+    this.activeCategory = cat;
+    this.applyFilters();
   }
 
-  shuffleArray(array: any[]): any[] {
-    return array.sort(() => Math.random() - 0.5);
+  // 3. LOGIC TRUNG TÂM: Kết hợp cả Search và Category
+  applyFilters() {
+    let tempBooks = [...this.books]; // Copy từ danh sách gốc
+
+    // Bước 1: Lọc theo từ khóa tìm kiếm (nếu có)
+    if (this.searchQuery && this.searchQuery.trim() !== '') {
+      const query = this.searchQuery.toLowerCase().trim();
+      tempBooks = tempBooks.filter(b => 
+        b.name.toLowerCase().includes(query) || 
+        b.author?.fullname.toLowerCase().includes(query)
+      );
+    }
+
+    // Bước 2: Lọc theo thể loại (nếu không phải All)
+    if (this.activeCategory !== 'All') {
+      tempBooks = tempBooks.filter(b => 
+        b.genres?.name && b.genres.name.toLowerCase().includes(this.activeCategory.toLowerCase())
+      );
+    }
+
+    // Cập nhật danh sách hiển thị
+    this.filteredBooks = tempBooks;
   }
-  
-  navigateToBooklist(genreName: string): void {
-    this.router.navigate(['/booklist'], { queryParams: { genre: genreName } });
+
+  borrowBook(bookId: number) {
+      this.router.navigate(['/borrow'], { queryParams: { bookId: bookId } });
   }
-    
 }

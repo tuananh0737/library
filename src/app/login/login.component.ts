@@ -1,4 +1,3 @@
-
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -40,23 +39,23 @@ export class LoginComponent {
         }
       },
       error: (error) => {
-  this.loading = false; 
-  console.log('Error Object:', error.error); 
+        this.loading = false; 
+        console.log('Error Object:', error.error); 
 
-      try {
-        const parsedError = typeof error.error === 'string' ? JSON.parse(error.error) : error.error;
-        if (parsedError.errorMessage) {
-          this.errorMessage = parsedError.errorMessage; 
-          console.error('Error Message:', parsedError.errorMessage);
-          console.error('Error Code:', parsedError.errorCode);
-        } else {
-          this.errorMessage = 'An unknown error occurred.';
+        try {
+          const parsedError = typeof error.error === 'string' ? JSON.parse(error.error) : error.error;
+          if (parsedError.errorMessage) {
+            this.errorMessage = parsedError.errorMessage; 
+            console.error('Error Message:', parsedError.errorMessage);
+            console.error('Error Code:', parsedError.errorCode);
+          } else {
+            this.errorMessage = 'An unknown error occurred.';
+          }
+        } catch (e) {
+          this.errorMessage = 'Unable to process the error response.';
+          console.error('Error Parsing:', e);
         }
-      } catch (e) {
-        this.errorMessage = 'Unable to process the error response.';
-        console.error('Error Parsing:', e);
       }
-    }
     });
   }
 
@@ -65,17 +64,18 @@ export class LoginComponent {
     this.http.post('/api/userlogged', {}, { headers }).subscribe({
       next: (response: any) => {
         const role = response?.role;
+        
+        // CẬP NHẬT: Set role vào service để AppComponent nhận được tín hiệu
+        this.authService.setUserRole(role);
+
+        // ĐIỀU HƯỚNG: Không dùng window.location.reload() nữa
         if (role === 'ROLE_ADMIN') {
-          this.router.navigate(['/admin/admin-home']).then(() => { window.location.reload();
-          });
+          this.router.navigate(['/admin/admin-home']);
         } else if (role === 'ROLE_USER') {
-          this.router.navigate(['/home']).then(() => { window.location.reload();
-          });
+          this.router.navigate(['/home']);
         } else if (role === 'ROLE_LIBRARIAN') {
-          this.router.navigate(['/home']).then(() => { window.location.reload();
-          });
-        }
-          else {
+          this.router.navigate(['/home']);
+        } else {
           alert('Unknown role');
         }
       },

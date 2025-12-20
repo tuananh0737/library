@@ -1,128 +1,132 @@
-<div class="page-container">
+<div class="app-layout">
+  
+  <aside class="sidebar"> <a class="brand" routerLink="/home">
+      <div class="logo-icon"><i class="bi bi-book-half"></i></div>
+      <span class="brand-name">BookReads</span>
+    </a>
 
-	<div class="sidebar" *ngIf="userRole === 'ROLE_USER' || userRole === 'ROLE_ADMIN' || userRole === 'ROLE_LIBRARIAN'">
-	  <a class="sidebar-brand" routerLink="/home">
-		<i class="bi bi-book-half"></i> 
-		BookReads
-	  </a>
-	  
-	  <ul class="nav flex-column">
-		<ng-container *ngIf="userRole === 'ROLE_USER'">
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/mybook" routerLinkActive="active">
-			  <i class="bi bi-heart-fill"></i> Danh sách yêu thích
-			</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/borrow" routerLinkActive="active">
-			  <i class="bi bi-journal-arrow-down"></i> Sách đã mượn
-			</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/booklist" routerLinkActive="active">
-			  <i class="bi bi-search"></i> Tìm kiếm
-			</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/ebook" routerLinkActive="active">
-			  <i class="bi bi-collection-fill"></i> Thư viện trực tuyến
-			</a>
-		  </li>
-		</ng-container>
-  
-		<ng-container *ngIf="userRole === 'ROLE_ADMIN'">
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/admin-home" routerLinkActive="active">
-			  <i class="bi bi-house-door-fill"></i> Home
-			</a>
-		  </li>
-		  <li class="nav-item">
-			  <a class="nav-link" routerLink="/librarian/deCodeQR" routerLinkActive="active">
-				  <i class="bi bi-qr-code-scan"></i> Quét mã QR
-			  </a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/user" routerLinkActive="active">
-			  <i class="bi bi-people-fill"></i> Người đọc
-			</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/librarian" routerLinkActive="active">
-			  <i class="bi bi-person-badge-fill"></i> Thủ thư
-			</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/book" routerLinkActive="active">
-			  <i class="bi bi-book-fill"></i> Sách
-			</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/author" routerLinkActive="active">
-			  <i class="bi bi-pen-fill"></i> Tác giả
-			</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" routerLink="/admin/genre" routerLinkActive="active">
-			  <i class="bi bi-tag-fill"></i> Thể loại
-			</a>
-		  </li>
-		</ng-container>
-  
-		<ng-container *ngIf="userRole === 'ROLE_LIBRARIAN'">
-		  <li class="nav-item">
-			  <a class="nav-link" routerLink="/librarian/book" routerLinkActive="active">
-				  <i class="bi bi-book-fill"></i> Sách
-			  </a>
-		  </li>
-		  <li class="nav-item">
-			  <a class="nav-link" routerLink="/librarian/borrow" routerLinkActive="active">
-				  <i class="bi bi-arrow-return-left"></i> Trả sách
-			  </a>
-		  </li>
-		  <li class="nav-item">
-			  <a class="nav-link" routerLink="/librarian/deCodeQR" routerLinkActive="active">
-				  <i class="bi bi-qr-code-scan"></i> Quét mã QR
-			  </a>
-		  </li>
-		</ng-container>
-	  </ul>
-  
-	  <ul class="nav flex-column mt-auto">
-		 <ng-container *ngIf="isLoggedIn">
-		  <li class="nav-item">
-			  <a class="nav-link" routerLink="/user-info" routerLinkActive="active">
-				  <i class="bi bi-person-circle"></i> Thông tin cá nhân
-			  </a>
-		  </li>
-		  <li class="nav-item">
-			  <a class="nav-link" (click)="logout()">
-				  <i class="bi bi-box-arrow-right"></i> Đăng xuất
-			  </a>
-		  </li>
-		 </ng-container>
-  
-		 <ng-container *ngIf="!isLoggedIn">
-		  <li class="nav-item">
-			  <a class="nav-link" routerLink="/login" routerLinkActive="active">
-				  <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
-			  </a>
-		  </li>
-		  <li class="nav-item">
-			  <a class="nav-link" routerLink="/sign-up" routerLinkActive="active">
-				  <i class="bi bi-person-plus-fill"></i> Đăng kí
-			  </a>
-		  </li>
-		 </ng-container>
-	  </ul>
-	</div>
-  
-	<div class="content-area">
-	  <router-outlet></router-outlet>
-	</div>
-  
+    <nav class="nav-menu">
+      
+      <ng-container *ngIf="!isLoggedIn">
+        <div class="nav-group">
+          <p class="group-title">KHÁM PHÁ</p>
+          <a routerLink="/home" routerLinkActive="active" class="nav-item">
+            <i class="bi bi-grid-fill"></i> <span>Trang chủ</span>
+          </a>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="userRole === 'ROLE_USER'">
+        <div class="nav-group">
+          <p class="group-title">KHÁM PHÁ</p>
+          <a routerLink="/home" routerLinkActive="active" class="nav-item">
+            <i class="bi bi-grid-fill"></i> <span>Trang chủ</span>
+          </a>
+          <a routerLink="/booklist" routerLinkActive="active" class="nav-item">
+            <i class="bi bi-search"></i> <span>Tìm kiếm nâng cao</span>
+          </a>
+          <a routerLink="/ebook" routerLinkActive="active" class="nav-item">
+            <i class="bi bi-collection-play-fill"></i> <span>Thư viện trực tuyến</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <p class="group-title">TỦ SÁCH CÁ NHÂN</p>
+          <a routerLink="/mybook" routerLinkActive="active" class="nav-item">
+            <i class="bi bi-heart-fill"></i> <span>Yêu thích</span>
+          </a>
+          <a routerLink="/borrow" routerLinkActive="active" class="nav-item">
+            <i class="bi bi-journal-bookmark-fill"></i> <span>Sách đã mượn</span>
+          </a>
+          
+          <a class="nav-item notification-link" (click)="toggleNotificationMenu()">
+            <div class="d-flex align-items-center justify-content-between w-100">
+               <span><i class="bi bi-bell-fill"></i> Thông báo</span>
+               <span class="badge-count" *ngIf="notifications.length > 0">{{notifications.length}}</span>
+            </div>
+          </a>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="userRole === 'ROLE_ADMIN'">
+         <div class="nav-group">
+            <p class="group-title">TỔNG QUAN</p>
+            <a routerLink="/admin/admin-home" routerLinkActive="active" class="nav-item">
+              <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+            </a>
+            <a class="nav-item notification-link" (click)="toggleNotificationMenu()">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                   <span><i class="bi bi-bell-fill"></i> Thông báo</span>
+                   <span class="badge-count" *ngIf="notifications.length > 0">{{notifications.length}}</span>
+                </div>
+              </a>
+          </div>
+          </ng-container>
+
+      <ng-container *ngIf="userRole === 'ROLE_LIBRARIAN'">
+          <div class="nav-group">
+             <p class="group-title">QUẢN LÝ</p>
+             <a routerLink="/librarian/book" routerLinkActive="active" class="nav-item">
+               <i class="bi bi-journal-check"></i> <span>Sách & Kho</span>
+             </a>
+             <a class="nav-item notification-link" (click)="toggleNotificationMenu()">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                   <span><i class="bi bi-bell-fill"></i> Thông báo</span>
+                   <span class="badge-count" *ngIf="notifications.length > 0">{{notifications.length}}</span>
+                </div>
+              </a>
+          </div>
+          </ng-container>
+
+    </nav>
+
+    <div class="user-profile">
+      <ng-container *ngIf="isLoggedIn">
+        <div class="profile-info" routerLink="/user-info">
+          <div class="avatar-circle"><i class="bi bi-person"></i></div>
+          <div class="text-info">
+            <span class="username">Tài khoản</span>
+            <span class="role-badge">
+                {{userRole === 'ROLE_ADMIN' ? 'Admin' : (userRole === 'ROLE_LIBRARIAN' ? 'Thủ thư' : 'Thành viên')}}
+            </span>
+          </div>
+        </div>
+        <button class="btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i></button>
+      </ng-container>
+
+      <ng-container *ngIf="!isLoggedIn">
+        <div class="nav-group" style="border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto;">
+            <a routerLink="/login" class="nav-item"><i class="bi bi-box-arrow-in-right"></i> <span>Đăng nhập</span></a>
+            <a routerLink="/sign-up" class="nav-item"><i class="bi bi-person-plus"></i> <span>Đăng ký</span></a>
+        </div>
+      </ng-container>
+    </div>
+  </aside>
+
+  <div class="notification-menu" *ngIf="showNotificationMenu">
+    <div class="notify-header">
+      <span>Thông báo mới</span>
+      <span class="badge-count-header" *ngIf="notifications.length > 0">{{notifications.length}}</span>
+    </div>
+    <div class="notify-list">
+      <div *ngFor="let note of notifications" class="notify-item">
+        <div class="notify-icon"><i class="bi bi-info-circle-fill"></i></div>
+        <div class="notify-content">
+          <p class="notify-msg">{{note.content || note.message || note.description}}</p>
+          <span class="notify-time">{{formatDate(note.createdDate)}}</span>
+        </div>
+      </div>
+      <div *ngIf="notifications.length === 0" class="empty-state">
+        <i class="bi bi-bell-slash"></i>
+        <p>Không có thông báo mới nào</p>
+      </div>
+    </div>
   </div>
-  
-  <div *ngIf="overlay" class="overlay d-flex align-items-center justify-content-center">
-	</div>
 
-	  
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <div *ngIf="overlay" class="overlay d-flex align-items-center justify-content-center">
+      </div>
+</div>

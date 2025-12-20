@@ -1,99 +1,102 @@
-<div class="container mt-5">
-  <h1 class="text-center mb-4">Xếp hạng sách </h1>
-  <div class="row">
-    <div *ngFor="let book of books" class="col-md-3">
-      <div class="card">
-        <img
-          [src]="'data:image/png;base64,' + book.qrCode"
-          class="card-img-top"
-          alt="Book Cover"
-          *ngIf="book.qrCode; else noImage"
-        />
-        <ng-template #noImage>
-          <img src="https://via.placeholder.com/150" class="card-img-top" alt="No Image" />
-        </ng-template>
-        <div class="card-body">
-          <h5 class="card-title">{{ book.name }}</h5>
-          <p class="card-text text-muted">
-            Tác giảgiả: {{ book.author.fullname || 'Unknown' }}
-          </p>
-          <p class="card-text text-muted">
-            Thể loạiloại: {{ book.genres.name || 'Unknown' }}
-          </p>
-          <p class="card-text">
-            Năm phát hànhhành: {{ book.publishYear || 'N/A' }}
-          </p>
-          <p class="card-text">
-            Rating: <strong>{{ book.averageRating || 'N/A' }}</strong>
-          </p>
-          <button
-            class="btn btn-primary"
-            (click)="showBookDetails(book)"
-            data-bs-toggle="modal"
-            data-bs-target="#bookDetailModal"
-          >
-            Xem chi tiết
-          </button>
+<div class="home-container">
+  
+  <div class="content-stream">
+    
+    <header class="stream-header">
+      <div class="header-text">
+        <h1>Khám phá</h1>
+        <p class="subtitle">Tìm kiếm cuốn sách yêu thích tiếp theo của bạn.</p>
+      </div>
+      
+      <div class="search-bar">
+        <i class="bi bi-search"></i>
+        <input 
+          type="text" 
+          placeholder="Nhập tên sách hoặc tác giả..." 
+          [(ngModel)]="searchQuery" 
+          (input)="onSearch()">
+      </div>
+    </header>
+
+    <div class="categories-scroll">
+      <button 
+        *ngFor="let cat of categories" 
+        [class.active]="activeCategory === cat"
+        (click)="filterCategory(cat)"
+        class="chip">
+        {{cat}}
+      </button>
+    </div>
+
+    <div class="book-grid">
+      <div class="book-card" 
+           *ngFor="let book of filteredBooks" 
+           (click)="selectBook(book)"
+           [class.selected]="selectedBook?.id === book.id">
+        
+        <div class="card-cover">
+          <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" alt="Cover">
+          <div class="hover-overlay">
+            <i class="bi bi-eye-fill"></i>
+          </div>
+        </div>
+        
+        <div class="card-info">
+          <h3 class="book-title" title="{{book.name}}">{{book.name}}</h3>
+          <p class="book-author">{{book.author?.fullname}}</p>
+        </div>
+      </div>
+
+      <div *ngIf="filteredBooks.length === 0" class="no-results">
+        <p>Không tìm thấy sách nào phù hợp.</p>
+      </div>
+    </div>
+  </div>
+
+  <aside class="detail-panel" *ngIf="selectedBook">
+    <div class="panel-content">
+      <div class="book-preview">
+        <div class="large-cover">
+             <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (selectedBook.name.charAt(0) | uppercase)" alt="Cover">
+        </div>
+        <h2 class="detail-title">{{selectedBook.name}}</h2>
+        <p class="detail-author">Tác giả: <span>{{selectedBook.author?.fullname}}</span></p>
+        
+        <div class="meta-tags">
+          <span class="tag">{{selectedBook.genres?.name}}</span>
+          <span class="tag">{{selectedBook.publishYear}}</span>
+          <span class="tag">{{selectedBook.numberPage}} trang</span>
+        </div>
+
+        <button class="btn-primary-action" (click)="borrowBook(selectedBook.id)">
+          Mượn Sách Ngay
+        </button>
+      </div>
+
+      <div class="book-description">
+        <h3>Mô tả</h3>
+        <p>{{selectedBook.description || 'Chưa có mô tả cho cuốn sách này.'}}</p>
+      </div>
+
+      <div class="book-stats">
+        <div class="stat-item">
+          <span class="value">{{selectedBook.quantity}}</span>
+          <span class="label">Còn lại</span>
+        </div>
+        <div class="stat-item">
+          <span class="value">{{selectedBook.location?.room}}</span>
+          <span class="label">Phòng</span>
+        </div>
+        <div class="stat-item">
+          <span class="value">{{selectedBook.location?.shelf}}</span>
+          <span class="label">Kệ</span>
         </div>
       </div>
     </div>
-  </div>
-
-
-  <h2 class="text-center mt-5 mb-4">Khám phá thể loại</h2>
-  <div class="row">
-    <div *ngFor="let genre of genres" class="col-md-4">
-      <div
-        class="genre-card text-center p-3 shadow-sm"
-        (click)="navigateToBooklist(genre.name)"
-        style="cursor: pointer;"
-      >
-        <h5>{{ genre.name }}</h5>
-        <p>{{ genre.details }}</p>
-      </div>
-    </div>
-  </div>
+  </aside>
   
+  <aside class="detail-panel empty" *ngIf="!selectedBook">
+      <div class="empty-msg">Chọn một cuốn sách để xem chi tiết</div>
+  </aside>
 
-<div
-  class="modal fade"
-  id="bookDetailModal"
-  tabindex="-1"
-  aria-labelledby="bookDetailModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="bookDetailModalLabel">
-          Thông tin chi tiết
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body" *ngIf="selectedBook">
-        <h4>{{ selectedBook.name }}</h4>
-        <p><strong>Tác giả:</strong> {{ selectedBook.author?.name || 'Unknown' }}</p>
-        <p><strong>Năm xuất bản:</strong> {{ selectedBook.publishYear || 'N/A' }}</p>
-        <p><strong>Số trang:</strong> {{ selectedBook.numberPage || 'N/A' }}</p>
-        <p><strong>Số lượng còn:</strong> {{ selectedBook.quantity || 0 }}</p>
-        <p><strong>Mô tả:</strong></p>
-        <p>{{ selectedBook.description || 'Không có mô tả' }}</p>
-        <p><strong>Đánh giá trung bình:</strong> {{ selectedBook.averageRating || 'N/A' }}</p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-        >
-        Đóng
-        </button>
-      </div>
-    </div>
-  </div>
 </div>

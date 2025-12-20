@@ -1,9 +1,8 @@
-
 import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-
+import { AuthService } from './services/auth.service'; // Import AuthService
 
 @Component({
   selector: 'app-root',
@@ -16,16 +15,37 @@ export class AppComponent implements OnInit {
   showNotificationMenu: boolean = false;
   notifications: any[] = [];
 
-  constructor(private router: Router, private http: HttpClient, private fb: FormBuilder) {  }
+  // Inject AuthService vào constructor
+  constructor(
+    private router: Router, 
+    private http: HttpClient, 
+    private fb: FormBuilder,
+    private authService: AuthService 
+  ) {  }
 
   ngOnInit(): void {
+    // Đăng ký (Subscribe) để lắng nghe thay đổi của User Role từ Service
+    this.authService.userRole$.subscribe(role => {
+      this.userRole = role;
+      this.isLoggedIn = !!role; // Nếu có role (khác rỗng) thì là đã đăng nhập
+      
+      // Nếu vừa đăng nhập xong thì tải thông báo
+      if (this.isLoggedIn) {
+        const token = localStorage.getItem('authToken');
+        if (token) this.fetchNotifications(token);
+      } else {
+        this.notifications = []; // Clear thông báo nếu logout
+      }
+    });
+
+    // Kiểm tra token khi tải lại trang (F5)
     const token = localStorage.getItem('authToken');
     if (token) {
-      this.isLoggedIn = true;
       this.fetchUserRole(token);
-      this.fetchNotifications(token);
+      // fetchNotifications sẽ được gọi trong subscribe ở trên khi fetchUserRole set role xong
     } else {
-      this.userRole = 'ROLE_USER'; 
+      // Nếu không có token, set trạng thái về rỗng
+      this.authService.setUserRole('');
     }
   }
 
@@ -33,25 +53,29 @@ export class AppComponent implements OnInit {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     this.http.post('/api/userlogged', {}, { headers }).subscribe({
       next: (response: any) => {
-        this.userRole = response?.role || '';
+        const role = response?.role || '';
+        // Cập nhật role vào service -> kích hoạt subscribe ở ngOnInit
+        this.authService.setUserRole(role);
       },
       error: () => {
-        this.userRole = 'ROLE_USER'; 
+        // Lỗi (hết hạn token, v.v.) -> reset role
+        this.authService.setUserRole('');
       }
     });
   }
 
   fetchNotifications(token: string): void {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get<any[]>('/api/user/notifications', { headers }).subscribe({
-      next: (data) => {
-        this.notifications = data;
-      },
-      error: () => {
-        this.notifications = [];
-      }
-    });
-  }
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  this.http.get<any[]>('/api/user/notifications', { headers }).subscribe({
+    next: (data) => {
+      console.log('Dữ liệu thông báo:', data); 
+      this.notifications = data;
+    },
+    error: () => {
+      this.notifications = [];
+    }
+  });
+}
 
   toggleNotificationMenu(): void {
     this.showNotificationMenu = !this.showNotificationMenu;
@@ -63,8 +87,10 @@ export class AppComponent implements OnInit {
 
   logout(): void {
     localStorage.removeItem('authToken');
-    this.isLoggedIn = false;
-    this.userRole = 'ROLE_USER';
+    
+    // Cập nhật trạng thái trong service để UI tự động thay đổi
+    this.authService.setUserRole(''); 
+    
     this.router.navigate(['/home']);
   }
 

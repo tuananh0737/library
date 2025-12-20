@@ -1,5 +1,41 @@
-body {
-    font-family: Arial, sans-serif;
+/* Import Bootstrap (nếu bạn đang dùng npm thì giữ nguyên, nếu không thì import ở đây) */
+/* Reset cơ bản & CSS Variables */
+:root {
+  --bg-app: #f3f4f6;          /* Màu nền tổng thể xám nhạt */
+  --bg-sidebar: #ffffff;      /* Sidebar trắng */
+  --bg-panel: #ffffff;        /* Panel chi tiết trắng */
+  
+  --primary-color: #1e3a8a;   /* Xanh dương đậm (Deep Blue) - Accent */
+  --primary-light: #3b82f6;   /* Xanh sáng hơn cho hover */
+  --text-main: #1f2937;       /* Chữ đen xám (không đen tuyền) */
+  --text-muted: #6b7280;      /* Chữ phụ xám nhạt */
+  
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --radius-card: 16px;        /* Bo góc lớn */
+  --radius-btn: 8px;
 }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Ẩn scroll body để app tự scroll bên trong */
+  height: 100vh;
+}
+
+/* Scrollbar đẹp hơn */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
