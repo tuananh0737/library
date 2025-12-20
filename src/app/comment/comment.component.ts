@@ -17,7 +17,8 @@ export class CommentComponent implements OnInit {
   }
 
   loadComments() {
-    this.commentService.getComments().subscribe((data) => {
+    // SỬA: Thêm : any[] cho biến data
+    this.commentService.getComments().subscribe((data: any[]) => {
       this.comments = data;
     });
   }
@@ -29,7 +30,6 @@ export class CommentComponent implements OnInit {
   }
 
   viewBookDetails(bookName: string) {
-    // Chuyển hướng đến trang chi tiết sách (ví dụ: sử dụng tên sách làm URL)
     this.router.navigate(['/book-details', bookName]);
   }
 }

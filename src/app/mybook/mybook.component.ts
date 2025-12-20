@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BookmarkService } from '../services/bookmark.service'; // [Mới] Import Service
 
 @Component({
   selector: 'app-mybook',
@@ -12,20 +12,21 @@ export class MybookComponent implements OnInit {
   isDeleteOverlayVisible: boolean = false;
   selectedBookmark: any = null; 
 
-  constructor(private http: HttpClient) {}
+  // [Cập nhật] Inject BookmarkService thay vì HttpClient
+  constructor(private bookmarkService: BookmarkService) {}
 
   ngOnInit(): void {
     const token = localStorage.getItem('authToken');
     if (token) {
-      this.fetchBookmarks(token);
+      this.fetchBookmarks();
     } else {
       this.errorMessage = 'Đăng nhập để tiếp tục.';
     }
   }
 
-  fetchBookmarks(token: string): void {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get('/api/user/find-bookmark-by-user', { headers }).subscribe({
+  // [Cập nhật] Sử dụng service để lấy danh sách
+  fetchBookmarks(): void {
+    this.bookmarkService.getBookmarks().subscribe({
       next: (response: any) => {
         this.bookmarks = response;
       },
@@ -46,19 +47,20 @@ export class MybookComponent implements OnInit {
     this.selectedBookmark = null; 
   }
 
-  deleteBook(bookmarkId: string): void {
+  // [Cập nhật] Sử dụng service để xóa
+  deleteBook(bookmarkId: number): void {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      this.errorMessage = 'Bạn cần đăng nhập lại để xóa mục yêu thích.';
+      this.errorMessage = 'Bạn cần đăng nhập lại.';
       return;
     }
 
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.delete(`/api/user/delete-bookmark?id=${bookmarkId}`, { headers }).subscribe({
+    this.bookmarkService.deleteBookmark(bookmarkId).subscribe({
       next: () => {
-        this.bookmarks = this.bookmarks.filter(bookmark => bookmark.id !== bookmarkId); 
+        // Cập nhật lại giao diện sau khi xóa thành công
+        this.bookmarks = this.bookmarks.filter(b => b.id !== bookmarkId); 
         this.closeDeleteOverlay(); 
-        this.errorMessage = ''; 
+        alert('Đã xóa khỏi danh sách yêu thích.');
       },
       error: (error) => {
         this.errorMessage = error.error?.errorMessage || 'Lỗi khi xóa mục yêu thích';
