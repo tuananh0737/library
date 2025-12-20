@@ -1,55 +1,40 @@
 <div class="home-container">
   
   <div class="content-stream">
-    
     <header class="stream-header">
       <div class="header-text">
         <h1>Khám phá</h1>
         <p class="subtitle">Tìm kiếm cuốn sách yêu thích tiếp theo của bạn.</p>
       </div>
-      
       <div class="search-bar">
         <i class="bi bi-search"></i>
-        <input 
-          type="text" 
-          placeholder="Nhập tên sách hoặc tác giả..." 
-          [(ngModel)]="searchQuery" 
-          (input)="onSearch()">
+        <input type="text" placeholder="Nhập tên sách hoặc tác giả..." [(ngModel)]="searchQuery" (input)="onSearch()">
       </div>
     </header>
 
     <div class="categories-scroll">
-      <button 
-        *ngFor="let cat of categories" 
-        [class.active]="activeCategory === cat"
-        (click)="filterCategory(cat)"
-        class="chip">
+      <button *ngFor="let cat of categories" [class.active]="activeCategory === cat" (click)="filterCategory(cat)" class="chip">
         {{cat}}
       </button>
     </div>
 
     <div class="book-grid">
-      <div class="book-card" 
-           *ngFor="let book of filteredBooks" 
-           (click)="selectBook(book)"
-           [class.selected]="selectedBook?.id === book.id">
-        
+      <div class="book-card" *ngFor="let book of filteredBooks" (click)="onSelectBook(book)" [class.selected]="selectedBook?.id === book.id">
         <div class="card-cover">
           <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" alt="Cover">
-          <div class="hover-overlay">
-            <i class="bi bi-eye-fill"></i>
-          </div>
+          
+          <button class="btn-fav-card" [class.active]="book.isFavorite" (click)="toggleFavorite($event, book)">
+             <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
+          </button>
+
+          <div class="hover-overlay"><i class="bi bi-eye-fill"></i></div>
         </div>
-        
         <div class="card-info">
           <h3 class="book-title" title="{{book.name}}">{{book.name}}</h3>
           <p class="book-author">{{book.author?.fullname}}</p>
         </div>
       </div>
-
-      <div *ngIf="filteredBooks.length === 0" class="no-results">
-        <p>Không tìm thấy sách nào phù hợp.</p>
-      </div>
+      <div *ngIf="filteredBooks.length === 0" class="no-results"><p>Không tìm thấy sách nào phù hợp.</p></div>
     </div>
   </div>
 
@@ -59,7 +44,14 @@
         <div class="large-cover">
              <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (selectedBook.name.charAt(0) | uppercase)" alt="Cover">
         </div>
-        <h2 class="detail-title">{{selectedBook.name}}</h2>
+        
+        <div class="title-row">
+            <h2 class="detail-title">{{selectedBook.name}}</h2>
+            <button class="btn-fav-panel" [class.active]="selectedBook.isFavorite" (click)="toggleFavorite($event, selectedBook)">
+                <i class="bi" [ngClass]="selectedBook.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
+            </button>
+        </div>
+
         <p class="detail-author">Tác giả: <span>{{selectedBook.author?.fullname}}</span></p>
         
         <div class="meta-tags">
@@ -68,9 +60,7 @@
           <span class="tag">{{selectedBook.numberPage}} trang</span>
         </div>
 
-        <button class="btn-primary-action" (click)="borrowBook(selectedBook.id)">
-          Mượn Sách Ngay
-        </button>
+        <button class="btn-primary-action" (click)="borrowBook(selectedBook.id)">Mượn Sách Ngay</button>
       </div>
 
       <div class="book-description">
@@ -79,17 +69,39 @@
       </div>
 
       <div class="book-stats">
-        <div class="stat-item">
-          <span class="value">{{selectedBook.quantity}}</span>
-          <span class="label">Còn lại</span>
+        <div class="stat-item"><span class="value">{{selectedBook.quantity}}</span><span class="label">Còn lại</span></div>
+        <div class="stat-item"><span class="value">{{selectedBook.location?.room}}</span><span class="label">Phòng</span></div>
+        <div class="stat-item"><span class="value">{{selectedBook.location?.shelf}}</span><span class="label">Kệ</span></div>
+      </div>
+
+      <div class="comments-area">
+        <div class="section-header">
+            <h3>Đánh giá</h3>
+            <button class="btn-open-review" (click)="openReviewForm()">
+                <i class="bi bi-pencil-square"></i> Viết đánh giá
+            </button>
         </div>
-        <div class="stat-item">
-          <span class="value">{{selectedBook.location?.room}}</span>
-          <span class="label">Phòng</span>
-        </div>
-        <div class="stat-item">
-          <span class="value">{{selectedBook.location?.shelf}}</span>
-          <span class="label">Kệ</span>
+
+        <div class="comment-list">
+            <div class="comment-item" *ngFor="let c of comments">
+                <div class="comment-avatar">{{c.user.charAt(0)}}</div>
+                <div class="comment-body">
+                    <div class="comment-header">
+                        <div class="user-info-group">
+                            <span class="comment-user">{{c.user}}</span>
+                            <div class="small-stars">
+                                <i *ngFor="let s of [1,2,3,4,5]" class="bi bi-star-fill" [class.active-star]="s <= c.rating"></i>
+                            </div>
+                        </div>
+                        <button class="btn-delete-cmt" *ngIf="c.isCurrentUser" (click)="deleteComment(c)" title="Xóa">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <span class="comment-date">{{c.date | date:'shortDate'}}</span>
+                    <p class="comment-content">{{c.content}}</p>
+                </div>
+            </div>
+            <div *ngIf="comments.length === 0" class="no-comments">Chưa có đánh giá nào.</div>
         </div>
       </div>
     </div>
@@ -98,5 +110,33 @@
   <aside class="detail-panel empty" *ngIf="!selectedBook">
       <div class="empty-msg">Chọn một cuốn sách để xem chi tiết</div>
   </aside>
+
+  <div class="review-modal-overlay" *ngIf="showReviewModal">
+    <div class="review-modal">
+        <div class="modal-header">
+            <h3>Đánh giá sách</h3>
+            <button class="btn-close-modal" (click)="closeReviewForm()"><i class="bi bi-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="book-name-review">Bạn đánh giá thế nào về <b>"{{selectedBook?.name}}"</b>?</p>
+            <div class="star-rating-select">
+                <i *ngFor="let star of [1,2,3,4,5]" 
+                   class="bi" 
+                   [ngClass]="star <= (tempHoverRating || tempRating) ? 'bi-star-fill' : 'bi-star'"
+                   (mouseenter)="tempHoverRating = star"
+                   (mouseleave)="tempHoverRating = 0"
+                   (click)="setRating(star)"></i>
+            </div>
+            <p class="rating-label" *ngIf="tempRating > 0">
+                {{ tempRating === 5 ? 'Tuyệt vời!' : (tempRating >= 4 ? 'Rất tốt' : (tempRating >= 3 ? 'Bình thường' : 'Tệ')) }}
+            </p>
+            <textarea class="review-textarea" placeholder="Chia sẻ cảm nghĩ của bạn..." rows="4" [(ngModel)]="tempComment"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeReviewForm()">Hủy</button>
+            <button class="btn-submit" (click)="submitReview()">Gửi</button>
+        </div>
+    </div>
+  </div>
 
 </div>

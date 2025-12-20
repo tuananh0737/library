@@ -1,102 +1,155 @@
-<div class="container ">
-  <h2 class="text-center mb-4 position-relative">
-    <span class="title-decoration">Tìm kiếm</span>
-  </h2> 
-    <div class="input-group mb-4">
-    <input type="text" class="form-control" placeholder="Tìm kiếm theo tên sách, tác giả hoặc thể loại" [(ngModel)]="searchQuery" />
-    <button class="btn btn-primary" (click)="performSearch()">Tìm kiếm</button>
+<div class="book-list-layout">
+  <div class="left-column">
+    <div class="search-page-container">
+      <header class="search-header">
+        <div class="header-title">
+          <h1>Thư viện</h1>
+          <p>Tìm kiếm và khám phá kho sách khổng lồ</p>
+        </div>
+        <div class="filter-toolbar">
+          <div class="search-input-group">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Tên sách..." [(ngModel)]="searchName" (input)="onSearch()">
+          </div>
+          <div class="search-input-group">
+            <i class="bi bi-person"></i>
+            <input type="text" placeholder="Tác giả..." [(ngModel)]="searchAuthor" (input)="onSearch()">
+          </div>
+          <div class="search-input-group">
+            <i class="bi bi-tags"></i>
+            <input type="text" placeholder="Thể loại..." [(ngModel)]="searchGenre" (input)="onSearch()">
+          </div>
+          <button class="btn-reset" (click)="resetSearch()" title="Xóa bộ lọc">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="results-area">
+        <div class="book-grid">
+          <div class="book-card" 
+               *ngFor="let book of filteredBooks" 
+               (click)="onSelectBook(book)" 
+               [class.active-card]="selectedBook?.id === book.id">
+            <div class="card-cover">
+              <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" alt="Cover">
+              <button class="btn-fav-card" 
+                      [class.active]="book.isFavorite"
+                      (click)="toggleFavorite($event, book)">
+                <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
+              </button>
+              <div class="hover-overlay"><span class="overlay-icon"><i class="bi bi-eye-fill"></i></span></div>
+            </div>
+            <div class="card-info">
+              <h3 class="book-title" title="{{book.name}}">{{book.name}}</h3>
+              <p class="book-author">{{book.author?.fullname}}</p>
+              <div class="book-meta">
+                <span class="meta-badge">{{book.genres?.name}}</span>
+                <span class="meta-year">{{book.publishYear}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="filteredBooks.length === 0" class="empty-state">
+           <div class="empty-icon"><i class="bi bi-search"></i></div>
+           <h3>Không tìm thấy kết quả</h3>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="table-responsive">
-    <table class="table table-striped table-bordered">
-      <thead class="table-dark">
-        <tr>
-          <th>Tên sách</th>
-          <th>Tác giả</th>
-          <th>Thể loại</th>
-          <th>Số trang</th>
-          <th>Năm xuất bản</th>
-          <th>Chi tiết</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let book of books">
-          <td>{{ book.name }}</td>
-          <td>{{ book.author.fullname }} ({{ book.author.nationality }})</td>
-          <td>{{ book.genres.name }}</td>
-          <td>{{ book.numberPage }}</td>
-          <td>{{ book.publishYear }}</td>
-          <td>
-            <button class="btn btn-info btn-sm" (click)="showDetails(book)">Xem</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+  <aside class="right-panel" *ngIf="selectedBook">
+    <div class="panel-header">
+      <span class="panel-label">Thông tin chi tiết</span>
+      <button class="btn-close-panel" (click)="closeDetail()"><i class="bi bi-x-lg"></i></button>
+    </div>
 
-<div class="pagination d-flex justify-content-center align-items-center mt-3">
-  <button 
-    class="btn btn-secondary me-2" 
-    [disabled]="currentPage === 1" 
-    (click)="goToPage(currentPage - 1)">
-    Trang trước
-  </button>
+    <div class="panel-content">
+      <div class="book-preview-large">
+        <div class="large-cover">
+          <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (selectedBook.name.charAt(0) | uppercase)" alt="Cover">
+        </div>
+        <div class="title-row">
+          <h2 class="detail-title">{{selectedBook.name}}</h2>
+          <button class="btn-fav-panel" [class.active]="selectedBook.isFavorite" (click)="toggleFavorite($event, selectedBook)">
+            <i class="bi" [ngClass]="selectedBook.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
+          </button>
+        </div>
+        <p class="detail-author">bởi <span>{{selectedBook.author?.fullname}}</span></p>
+        <button class="btn-borrow-action" (click)="onBorrow(selectedBook.id)">Mượn Sách Ngay</button>
+      </div>
 
-  <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
+      <div class="detail-section">
+        <h3>Giới thiệu</h3>
+        <p class="description-text">{{selectedBook.description || 'Chưa có mô tả.'}}</p>
+      </div>
 
-  <button 
-    class="btn btn-secondary ms-2" 
-    [disabled]="currentPage === totalPages" 
-    (click)="goToPage(currentPage + 1)">
-    Trang sau
-  </button>
-</div>
+      <div class="detail-stats">
+         <div class="stat-box"><span class="stat-val">{{selectedBook.quantity}}</span><span class="stat-lbl">Còn lại</span></div>
+         <div class="stat-box"><span class="stat-val">{{selectedBook.location?.room}}</span><span class="stat-lbl">Phòng</span></div>
+         <div class="stat-box"><span class="stat-val">{{selectedBook.location?.shelf}}</span><span class="stat-lbl">Kệ</span></div>
+      </div>
 
-<div class="modal fade" tabindex="-1" [class.show]="selectedBook" [style.display]="selectedBook ? 'block' : 'none'">
-  <div class="modal-dialog">
-    <div class="modal-content">
+      <div class="detail-section comments-area">
+        <div class="section-header">
+          <h3>Đánh giá & Bình luận</h3>
+          <button class="btn-open-review" (click)="openReviewForm()">
+            <i class="bi bi-pencil-square"></i> Viết đánh giá
+          </button>
+        </div>
+        
+        <div class="comment-list">
+          <div class="comment-item" *ngFor="let c of comments">
+            <div class="comment-avatar">{{c.user.charAt(0)}}</div>
+            <div class="comment-body">
+              <div class="comment-header">
+                <div class="user-info-group">
+                   <span class="comment-user">{{c.user}}</span>
+                   <div class="small-stars">
+                     <i *ngFor="let s of [1,2,3,4,5]" class="bi bi-star-fill" [class.active-star]="s <= c.rating"></i>
+                   </div>
+                </div>
+                
+                <button class="btn-delete-cmt" *ngIf="c.isCurrentUser" (click)="deleteComment(c)" title="Xóa bình luận">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              
+              <span class="comment-date">{{c.date | date:'shortDate'}}</span>
+              <p class="comment-content">{{c.content}}</p>
+            </div>
+          </div>
+          <div *ngIf="comments.length === 0" class="no-comments">Chưa có đánh giá nào. Hãy là người đầu tiên!</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="review-modal-overlay" *ngIf="showReviewModal">
+    <div class="review-modal">
       <div class="modal-header">
-        <h3 class="modal-title">Chi tiết sách</h3>
-        <button type="button" class="btn-close" (click)="closeForm()"></button>
+        <h3>Đánh giá sách</h3>
+        <button class="btn-close-modal" (click)="closeReviewForm()"><i class="bi bi-x"></i></button>
       </div>
       <div class="modal-body">
-        <p><strong>Tên sách:</strong> {{ selectedBook?.name }}</p>
-        <p><strong>Tác giả:</strong> {{ selectedBook?.author?.fullname }} ({{ selectedBook?.author?.nationality }})</p>
-        <p><strong>Thể loại:</strong> {{ selectedBook?.genres?.name }}</p>
-        <p><strong>Số trang:</strong> {{ selectedBook?.numberPage }}</p>
-        <p><strong>Năm xuất bản:</strong> {{ selectedBook?.publishYear }}</p>
-        <p><strong>Mô tả:</strong> {{ selectedBook?.description }}</p>
-        <p><strong>Điểm số:</strong> {{ selectedBook?.averageRating }}</p>
-        <p><strong>Số lượng:</strong> {{ selectedBook?.quantity }}</p>
-        <p><strong>Vị trí:</strong> {{ selectedBook?.location?.room  }} ({{selectedBook?.location?.shelf}})</p>
+        <p class="book-name-review">Bạn cảm thấy thế nào về cuốn sách <b>"{{selectedBook?.name}}"</b>?</p>
+        <div class="star-rating-select">
+          <i *ngFor="let star of [1,2,3,4,5]" 
+             class="bi" 
+             [ngClass]="star <= (tempHoverRating || tempRating) ? 'bi-star-fill' : 'bi-star'"
+             (mouseenter)="tempHoverRating = star"
+             (mouseleave)="tempHoverRating = 0"
+             (click)="setRating(star)"></i>
+        </div>
+        <p class="rating-label" *ngIf="tempRating > 0">
+          {{ tempRating === 5 ? 'Tuyệt vời!' : (tempRating >= 4 ? 'Rất tốt' : (tempRating >= 3 ? 'Bình thường' : 'Tệ')) }}
+        </p>
+        <textarea class="review-textarea" placeholder="Hãy chia sẻ cảm nhận của bạn..." rows="4" [(ngModel)]="tempComment"></textarea>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-danger" (click)="addBookmark(selectedBook)">Thêm vào danh sách yêu thích</button>
-        <button *ngIf="selectedBook" (click)="openCommentForm(selectedBook)" class="btn btn-success">Đánh giá</button>
-        <button class="btn btn-secondary" (click)="closeForm()">Đóng</button>
+        <button class="btn-cancel" (click)="closeReviewForm()">Hủy bỏ</button>
+        <button class="btn-submit" (click)="submitReview()">Gửi đánh giá</button>
       </div>
-    </div>
-  </div>
-</div>
-
-<div *ngIf="showCommentForm" class="overlay">
-  <div class="form-container">
-    <h2>Thêm đánh giá</h2>
-    <textarea [(ngModel)]="commentContent" placeholder="Write your comment" rows="3" class="form-control my-2"></textarea>
-    <div class="rating my-2">
-      <span 
-        *ngFor="let star of stars; let i = index" 
-        (click)="setStarRating(i + 1)"
-        class="star"
-        [class.filled]="i < commentStar"
-      >
-        ★
-      </span>
-    </div>
-    <div class="mt-3">
-      <button (click)="submitComment()" class="btn btn-primary">Đánh giá</button>
-      <button (click)="closeCommentForm()" class="btn btn-secondary">Hủy</button>
     </div>
   </div>
 </div>
