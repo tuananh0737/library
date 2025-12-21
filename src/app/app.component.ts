@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { AuthService } from './services/auth.service'; // Import AuthService
+import { AuthService } from './services/auth.service'; 
 
 @Component({
   selector: 'app-root',
@@ -15,7 +15,6 @@ export class AppComponent implements OnInit {
   showNotificationMenu: boolean = false;
   notifications: any[] = [];
 
-  // Inject AuthService vào constructor
   constructor(
     private router: Router, 
     private http: HttpClient, 
@@ -24,27 +23,22 @@ export class AppComponent implements OnInit {
   ) {  }
 
   ngOnInit(): void {
-    // Đăng ký (Subscribe) để lắng nghe thay đổi của User Role từ Service
     this.authService.userRole$.subscribe(role => {
       this.userRole = role;
-      this.isLoggedIn = !!role; // Nếu có role (khác rỗng) thì là đã đăng nhập
+      this.isLoggedIn = !!role; 
       
-      // Nếu vừa đăng nhập xong thì tải thông báo
-      if (this.isLoggedIn) {
+      if (this.isLoggedIn && this.userRole === 'ROLE_USER') {
         const token = localStorage.getItem('authToken');
         if (token) this.fetchNotifications(token);
       } else {
-        this.notifications = []; // Clear thông báo nếu logout
+        this.notifications = []; 
       }
     });
 
-    // Kiểm tra token khi tải lại trang (F5)
     const token = localStorage.getItem('authToken');
     if (token) {
       this.fetchUserRole(token);
-      // fetchNotifications sẽ được gọi trong subscribe ở trên khi fetchUserRole set role xong
     } else {
-      // Nếu không có token, set trạng thái về rỗng
       this.authService.setUserRole('');
     }
   }
@@ -54,28 +48,25 @@ export class AppComponent implements OnInit {
     this.http.post('/api/userlogged', {}, { headers }).subscribe({
       next: (response: any) => {
         const role = response?.role || '';
-        // Cập nhật role vào service -> kích hoạt subscribe ở ngOnInit
         this.authService.setUserRole(role);
       },
       error: () => {
-        // Lỗi (hết hạn token, v.v.) -> reset role
         this.authService.setUserRole('');
       }
     });
   }
 
   fetchNotifications(token: string): void {
-  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  this.http.get<any[]>('/api/user/notifications', { headers }).subscribe({
-    next: (data) => {
-      console.log('Dữ liệu thông báo:', data); 
-      this.notifications = data;
-    },
-    error: () => {
-      this.notifications = [];
-    }
-  });
-}
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    this.http.get<any[]>('/api/user/notifications', { headers }).subscribe({
+      next: (data) => {
+        this.notifications = data;
+      },
+      error: () => {
+        this.notifications = [];
+      }
+    });
+  }
 
   toggleNotificationMenu(): void {
     this.showNotificationMenu = !this.showNotificationMenu;
@@ -88,8 +79,8 @@ export class AppComponent implements OnInit {
   logout(): void {
     localStorage.removeItem('authToken');
     
-    // Cập nhật trạng thái trong service để UI tự động thay đổi
     this.authService.setUserRole(''); 
+    this.notifications = []; 
     
     this.router.navigate(['/home']);
   }
@@ -101,19 +92,18 @@ export class AppComponent implements OnInit {
       this.showNotificationMenu = false;
     }
   }
+
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleString(); 
   }
 
-  //doi mat khau
   oldPassword: string = '';
   newPassword: string = '';
   errorMessage: string = '';
   successMessage: string = '';
   overlay: boolean = false;
   reEnterNewPassword: string = '';
-
 
   openChangePasswordForm() {
     this.overlay = true;
@@ -149,7 +139,10 @@ export class AppComponent implements OnInit {
     this.http.post('/api/user/change-password', body, { headers, responseType: 'text' }).subscribe({
       next: (response: string) => {
         this.successMessage = 'Đổi mật khẩu thành công!';
-        this.closeChangePasswordForm();
+        setTimeout(() => {
+             this.closeChangePasswordForm();
+             this.successMessage = ''; // Reset message
+        }, 1500);
       },
       error: (err) => {
         if (err.status === 400) {
@@ -160,7 +153,13 @@ export class AppComponent implements OnInit {
       }
     });
   }
+
   closeChangePasswordForm(){
     this.overlay = false;
+    this.oldPassword = '';
+    this.newPassword = '';
+    this.reEnterNewPassword = '';
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 }

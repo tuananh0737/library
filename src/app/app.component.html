@@ -54,20 +54,50 @@
             <a routerLink="/admin/admin-home" routerLinkActive="active" class="nav-item">
               <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
             </a>
-            <a class="nav-item notification-link" (click)="toggleNotificationMenu()">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                   <span><i class="bi bi-bell-fill"></i> Thông báo</span>
-                   <span class="badge-count" *ngIf="notifications.length > 0">{{notifications.length}}</span>
-                </div>
-              </a>
           </div>
-          </ng-container>
+
+          <div class="nav-group">
+            <p class="group-title">QUẢN LÝ TÀI NGUYÊN</p>
+            <a routerLink="/admin/book" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-journal-album"></i> <span>Quản lý Sách</span>
+            </a>
+            <a routerLink="/admin/author" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-pen-fill"></i> <span>Quản lý Tác giả</span>
+            </a>
+            <a routerLink="/admin/genre" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-tags-fill"></i> <span>Quản lý Thể loại</span>
+            </a>
+          </div>
+
+          <div class="nav-group">
+            <p class="group-title">HỆ THỐNG</p>
+            <a routerLink="/admin/user" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-people-fill"></i> <span>Người đọc</span>
+            </a>
+            <a routerLink="/admin/librarian" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-person-badge-fill"></i> <span>Thủ thư</span>
+            </a>
+            <a routerLink="/librarian/deCodeQR" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-qr-code"></i> <span>Quét mã QR</span>
+            </a>
+          </div>
+      </ng-container>
 
       <ng-container *ngIf="userRole === 'ROLE_LIBRARIAN'">
           <div class="nav-group">
-             <p class="group-title">QUẢN LÝ</p>
+             <p class="group-title">QUẢN LÝ KHO</p>
              <a routerLink="/librarian/book" routerLinkActive="active" class="nav-item">
                <i class="bi bi-journal-check"></i> <span>Sách & Kho</span>
+             </a>
+          </div>
+
+          <div class="nav-group">
+            <p class="group-title">MƯỢN TRẢ</p>
+             <a routerLink="/librarian/borrow" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-arrow-left-right"></i> <span>Trả sách / Duyệt</span>
+             </a>
+             <a routerLink="/librarian/deCodeQR" routerLinkActive="active" class="nav-item">
+                <i class="bi bi-qr-code"></i> <span>Quét mã QR</span>
              </a>
              <a class="nav-item notification-link" (click)="toggleNotificationMenu()">
                 <div class="d-flex align-items-center justify-content-between w-100">
@@ -76,7 +106,7 @@
                 </div>
               </a>
           </div>
-          </ng-container>
+      </ng-container>
 
     </nav>
 
@@ -128,5 +158,5 @@
   </main>
 
   <div *ngIf="overlay" class="overlay d-flex align-items-center justify-content-center">
-      </div>
+    </div>
 </div>
