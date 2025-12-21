@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BookService } from '../services/book.service';
-import { BookmarkService } from '../services/bookmark.service'; // Import Service từ Connect
-import { CommentService } from '../services/comment.service';   // Import Service từ Connect
+import { BookmarkService } from '../services/bookmark.service';
+import { CommentService } from '../services/comment.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,65 +10,205 @@ import { Router } from '@angular/router';
   styleUrls: ['./book-list.component.css']
 })
 export class BookListComponent implements OnInit {
-  // --- Dữ liệu sách ---
+  // --- Dữ liệu Sách & Bookmark ---
   books: any[] = [];
   filteredBooks: any[] = [];
   selectedBook: any = null;
-  
-  // --- Dữ liệu Bookmark (để xử lý logic yêu thích) ---
   myBookmarks: any[] = [];
 
-  // --- Biến tìm kiếm (Khớp với HTML) ---
+  // --- Biến Tìm kiếm ---
   searchName: string = '';
   searchAuthor: string = '';
   searchGenre: string = '';
 
-  // --- LOGIC ĐÁNH GIÁ (REVIEW) ---
+  // --- Biến Đánh giá & Bình luận ---
   showReviewModal: boolean = false;
   tempRating: number = 0;
   tempHoverRating: number = 0;
   tempComment: string = '';
-  comments: any[] = []; 
+  
+  comments: any[] = [];
+  isAdmin: boolean = false; // Biến kiểm tra quyền Admin
+  currentUserInfo: any = null; // Lưu thông tin user từ token
 
   constructor(
     private bookService: BookService,
-    private bookmarkService: BookmarkService, // Inject Service
-    private commentService: CommentService,   // Inject Service
+    private bookmarkService: BookmarkService,
+    private commentService: CommentService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    // 1. Tải danh sách sách
+    // 1. Giải mã Token để lấy thông tin User & Quyền Admin
+    this.decodeToken();
+
+    // 2. Tải danh sách sách
     this.bookService.getBooks().subscribe({
       next: (data) => {
         this.books = data.map((b: any) => ({ ...b, isFavorite: false }));
-        // 2. Sau khi có sách, tải danh sách Bookmark để map trạng thái yêu thích
+        // 3. Tải bookmark để cập nhật trạng thái trái tim
         this.loadUserBookmarks();
       },
       error: (err) => console.error('Lỗi tải sách:', err)
     });
   }
 
-  // --- TẢI & XỬ LÝ BOOKMARK ---
+  // --- GIẢI MÃ TOKEN (LẤY USERNAME & ROLE) ---
+  decodeToken(): void {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        
+        // Lấy thông tin Username/Email để so sánh
+        this.currentUserInfo = {
+          username: payload.sub || payload.username || '',
+          email: payload.email || ''
+        };
+
+        // Kiểm tra quyền Admin
+        const roles = payload.role || payload.roles || payload.authorities || '';
+        if (String(roles).toUpperCase().includes('ADMIN')) {
+          this.isAdmin = true;
+          console.log('Đã đăng nhập với quyền Admin.');
+        }
+      } catch (e) {
+        console.error('Lỗi đọc token:', e);
+      }
+    }
+  }
+
+  // --- TẢI DANH SÁCH COMMENT ---
+  loadBookComments(bookId: number): void {
+    const myUser = this.currentUserInfo?.username ? String(this.currentUserInfo.username).toLowerCase() : '';
+    const myEmail = this.currentUserInfo?.email ? String(this.currentUserInfo.email).toLowerCase() : '';
+
+    this.commentService.getCommentsByBook(bookId).subscribe({
+      next: (data: any[]) => {
+        this.comments = data.map(c => {
+          // --- LOGIC NHẬN DIỆN CHỦ SỞ HỮU (FIX LỖI F5) ---
+          let isOwner = false;
+          
+          if (c.user) {
+            // Lấy thông tin từ API
+            const apiUsername = String(c.user.username || c.user.sub || '').toLowerCase();
+            const apiEmail = String(c.user.email || '').toLowerCase();
+            
+            // So sánh Username HOẶC Email
+            if (myUser && apiUsername && myUser === apiUsername) {
+              isOwner = true;
+            } else if (myEmail && apiEmail && myEmail === apiEmail) {
+              isOwner = true;
+            }
+          }
+
+          // Quyền xóa: Admin HOẶC Chủ sở hữu
+          const canDelete = this.isAdmin || isOwner;
+
+          return {
+            id: c.id,
+            // Tên hiển thị: Ưu tiên Fullname -> Username -> "Người dùng"
+            user: c.user ? (c.user.fullname || c.user.username || 'Người dùng') : 'Ẩn danh',
+            rating: c.star,
+            content: c.content,
+            date: c.createdDate ? new Date(c.createdDate) : new Date(),
+            isCurrentUser: canDelete // Biến này quyết định hiển thị nút xóa
+          };
+        });
+
+        // Sắp xếp: Mới nhất lên đầu
+        this.comments.sort((a, b) => b.date.getTime() - a.date.getTime());
+      },
+      error: (err) => console.error('Lỗi tải bình luận:', err)
+    });
+  }
+
+  // --- XÓA BÌNH LUẬN ---
+  deleteComment(comment: any): void {
+    if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) return;
+
+    if (comment.id) {
+      // Ưu tiên dùng API Admin nếu đang là Admin (xóa được tất cả)
+      if (this.isAdmin) {
+        this.commentService.deleteCommentByAdmin(comment.id).subscribe({
+          next: () => {
+            this.comments = this.comments.filter(c => c !== comment);
+            alert('Đã xóa bình luận (Admin).');
+          },
+          error: (err) => {
+            // Nếu lỗi (ví dụ không phải admin thật), thử xóa bằng API thường
+            this.retryDeleteAsUser(comment);
+          }
+        });
+      } else {
+        // Nếu là User thường
+        this.retryDeleteAsUser(comment);
+      }
+    }
+  }
+
+  // Hàm phụ để xóa với quyền User
+  retryDeleteAsUser(comment: any): void {
+    this.commentService.deleteComment(comment.id).subscribe({
+      next: () => {
+        this.comments = this.comments.filter(c => c !== comment);
+        alert('Đã xóa bình luận.');
+      },
+      error: (err) => alert('Không thể xóa: ' + (err.error?.message || 'Lỗi server'))
+    });
+  }
+
+  // --- GỬI ĐÁNH GIÁ (BÌNH LUẬN MỚI) ---
+  submitReview(): void {
+    if (this.tempRating === 0) {
+      alert('Vui lòng chọn số sao đánh giá!');
+      return;
+    }
+    
+    const rating = this.tempRating;
+    const content = this.tempComment;
+
+    this.commentService.addComment(content, rating, this.selectedBook.id)
+      .subscribe({
+        next: (response: any) => {
+          alert('Gửi đánh giá thành công!');
+          
+          // Hiển thị ngay lập tức (isCurrentUser = true vì mới tạo)
+          const newComment = {
+            id: response?.id, 
+            user: 'Tôi (Bạn)', 
+            rating: rating,
+            content: content,
+            date: new Date(),
+            isCurrentUser: true 
+          };
+
+          this.comments.unshift(newComment);
+          this.closeReviewForm();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Lỗi gửi bình luận: ' + (err.error?.message || 'Vui lòng thử lại'));
+        }
+      });
+  }
+
+  // --- CÁC HÀM KHÁC (BOOKMARK, SEARCH...) ---
+
   loadUserBookmarks(): void {
     const token = localStorage.getItem('authToken');
     if (!token) {
       this.filteredBooks = [...this.books];
       return;
     }
-
     this.bookmarkService.getBookmarks().subscribe({
       next: (bookmarks: any[]) => {
         this.myBookmarks = bookmarks;
-        // Cập nhật trạng thái isFavorite cho từng cuốn sách
         this.books.forEach(book => {
-          // Kiểm tra xem sách này có trong list bookmark không
           const isBookmarked = this.myBookmarks.some(bm => bm.book.id === book.id);
           book.isFavorite = isBookmarked;
         });
-        this.filteredBooks = [...this.books]; // Cập nhật lại danh sách hiển thị
-        
-        // Nếu đang mở chi tiết sách, cập nhật lại trạng thái sách đó
+        this.filteredBooks = [...this.books];
         if (this.selectedBook) {
           const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
           if (updatedBook) this.selectedBook.isFavorite = updatedBook.isFavorite;
@@ -78,7 +218,72 @@ export class BookListComponent implements OnInit {
     });
   }
 
-  // --- TÌM KIẾM (Giữ nguyên logic Library) ---
+  onSelectBook(book: any): void {
+    this.selectedBook = book;
+    this.comments = []; 
+    this.loadBookComments(book.id);
+  }
+
+  closeDetail(): void {
+    this.selectedBook = null;
+    this.showReviewModal = false;
+  }
+
+  toggleFavorite(event: Event, book: any): void {
+    event.stopPropagation();
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('Bạn cần đăng nhập để thực hiện chức năng này!');
+      return;
+    }
+
+    if (book.isFavorite) {
+      const bookmarkEntry = this.myBookmarks.find(bm => bm.book.id === book.id);
+      if (bookmarkEntry) {
+        this.bookmarkService.deleteBookmark(bookmarkEntry.id).subscribe({
+          next: () => {
+            book.isFavorite = false;
+            this.loadUserBookmarks(); 
+            alert('Đã xóa khỏi danh sách yêu thích.');
+          },
+          error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+        });
+      }
+    } else {
+      this.bookmarkService.addBookmark(book.id).subscribe({
+        next: () => {
+          book.isFavorite = true;
+          this.loadUserBookmarks(); 
+          alert('Đã thêm vào danh sách yêu thích.');
+        },
+        error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+      });
+    }
+  }
+
+  openReviewForm(): void {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('Vui lòng đăng nhập để bình luận!');
+      return;
+    }
+    this.showReviewModal = true;
+    this.tempRating = 0; 
+    this.tempComment = '';
+  }
+
+  closeReviewForm(): void {
+    this.showReviewModal = false;
+  }
+
+  setRating(star: number): void {
+    this.tempRating = star;
+  }
+
+  onBorrow(bookId: number): void {
+    this.router.navigate(['/borrow'], { queryParams: { bookId: bookId } });
+  }
+
   onSearch(): void {
     this.selectedBook = null;
     const name = this.searchName.toLowerCase().trim();
@@ -99,143 +304,5 @@ export class BookListComponent implements OnInit {
     this.searchGenre = '';
     this.filteredBooks = [...this.books];
     this.selectedBook = null;
-  }
-
-  // --- GIAO DIỆN CHÍNH ---
-  onSelectBook(book: any): void {
-    this.selectedBook = book;
-    
-    // Giả lập comment hiển thị tạm thời (Vì API find-all-book chưa chắc trả về comment)
-    // Bạn có thể gọi thêm API lấy comment theo sách ở đây nếu backend hỗ trợ
-    this.comments = [
-      { 
-        user: 'Người dùng khác', 
-        rating: 5, 
-        content: 'Sách rất hay, cốt truyện lôi cuốn!', 
-        date: new Date('2023-10-15'),
-        isCurrentUser: false 
-      }
-    ];
-  }
-
-  closeDetail(): void {
-    this.selectedBook = null;
-    this.showReviewModal = false;
-  }
-
-  onBorrow(bookId: number): void {
-    this.router.navigate(['/borrow'], { queryParams: { bookId: bookId } });
-  }
-
-  // --- XỬ LÝ YÊU THÍCH (Kết nối API) ---
-  toggleFavorite(event: Event, book: any): void {
-    event.stopPropagation();
-
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Bạn cần đăng nhập để thực hiện chức năng này!');
-      return;
-    }
-
-    if (book.isFavorite) {
-      // Logic XÓA Bookmark
-      // Cần tìm bookmarkId tương ứng với bookId này
-      const bookmarkEntry = this.myBookmarks.find(bm => bm.book.id === book.id);
-      
-      if (bookmarkEntry) {
-        this.bookmarkService.deleteBookmark(bookmarkEntry.id).subscribe({
-          next: () => {
-            book.isFavorite = false;
-            this.loadUserBookmarks(); // Tải lại danh sách để đồng bộ
-            alert('Đã xóa khỏi danh sách yêu thích.');
-          },
-          error: (err) => alert('Lỗi khi xóa bookmark: ' + (err.error?.message || err.message))
-        });
-      }
-    } else {
-      // Logic THÊM Bookmark
-      this.bookmarkService.addBookmark(book.id).subscribe({
-        next: () => {
-          book.isFavorite = true;
-          this.loadUserBookmarks(); // Tải lại danh sách để đồng bộ
-          alert('Đã thêm vào danh sách yêu thích.');
-        },
-        error: (err) => alert('Lỗi khi thêm bookmark: ' + (err.error?.message || err.message))
-      });
-    }
-  }
-
-  // --- MODAL ĐÁNH GIÁ ---
-  openReviewForm(): void {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Vui lòng đăng nhập để bình luận!');
-      return;
-    }
-    this.showReviewModal = true;
-    this.tempRating = 5;
-    this.tempComment = '';
-  }
-
-  closeReviewForm(): void {
-    this.showReviewModal = false;
-  }
-
-  setRating(star: number): void {
-    this.tempRating = star;
-  }
-
-  // --- GỬI ĐÁNH GIÁ (Kết nối API) ---
-  submitReview(): void {
-    if (this.tempRating === 0) {
-      alert('Vui lòng chọn số sao đánh giá!');
-      return;
-    }
-    
-    // Gọi API add-comment từ Connect
-    this.commentService.addComment(this.tempComment, this.tempRating, this.selectedBook.id)
-      .subscribe({
-        next: () => {
-          alert('Gửi đánh giá thành công!');
-          
-          // Thêm comment mới vào danh sách hiển thị tạm thời
-          const newReview = {
-            user: 'Tôi (Bạn)', 
-            rating: this.tempRating,
-            content: this.tempComment,
-            date: new Date(),
-            isCurrentUser: true // Đánh dấu là của mình để hiện nút xóa
-          };
-          this.comments.unshift(newReview);
-          
-          this.closeReviewForm();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Lỗi gửi bình luận: ' + (err.error?.message || 'Vui lòng thử lại'));
-        }
-      });
-  }
-
-  // --- XÓA BÌNH LUẬN (Kết nối API) ---
-  deleteComment(comment: any): void {
-    // Lưu ý: Comment giả lập thì không có ID để xóa qua API
-    // Nếu comment được tải từ API về thì sẽ có ID.
-    const confirmDelete = confirm('Bạn có chắc muốn xóa bình luận này không?');
-    if (confirmDelete) {
-      if (comment.id) {
-         // Nếu comment có ID (từ API), gọi API xóa
-         this.commentService.deleteComment(comment.id).subscribe({
-           next: () => {
-             this.comments = this.comments.filter(c => c !== comment);
-             alert('Đã xóa bình luận.');
-           },
-           error: (err) => alert('Không thể xóa: ' + err.message)
-         });
-      } else {
-         // Nếu là comment mới thêm (chưa reload trang để có ID), chỉ xóa trên giao diện
-         this.comments = this.comments.filter(c => c !== comment);
-      }
-    }
   }
 }

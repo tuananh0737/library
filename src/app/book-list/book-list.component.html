@@ -27,17 +27,15 @@
 
       <div class="results-area">
         <div class="book-grid">
-          <div class="book-card" 
-               *ngFor="let book of filteredBooks" 
-               (click)="onSelectBook(book)" 
+          <div class="book-card" *ngFor="let book of filteredBooks" (click)="onSelectBook(book)"
                [class.active-card]="selectedBook?.id === book.id">
             <div class="card-cover">
               <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" alt="Cover">
-              <button class="btn-fav-card" 
-                      [class.active]="book.isFavorite"
-                      (click)="toggleFavorite($event, book)">
+              
+              <button class="btn-fav-card" [class.active]="book.isFavorite" (click)="toggleFavorite($event, book)">
                 <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
               </button>
+              
               <div class="hover-overlay"><span class="overlay-icon"><i class="bi bi-eye-fill"></i></span></div>
             </div>
             <div class="card-info">
@@ -50,6 +48,7 @@
             </div>
           </div>
         </div>
+        
         <div *ngIf="filteredBooks.length === 0" class="empty-state">
            <div class="empty-icon"><i class="bi bi-search"></i></div>
            <h3>Không tìm thấy kết quả</h3>
@@ -100,26 +99,33 @@
         
         <div class="comment-list">
           <div class="comment-item" *ngFor="let c of comments">
-            <div class="comment-avatar">{{c.user.charAt(0)}}</div>
+            <div class="comment-avatar">{{c.user.charAt(0) | uppercase}}</div>
+            
             <div class="comment-body">
               <div class="comment-header">
                 <div class="user-info-group">
-                   <span class="comment-user">{{c.user}}</span>
-                   <div class="small-stars">
-                     <i *ngFor="let s of [1,2,3,4,5]" class="bi bi-star-fill" [class.active-star]="s <= c.rating"></i>
-                   </div>
+                  <span class="comment-user">{{c.user}}</span>
+                  <div class="small-stars">
+                    <i *ngFor="let s of [1,2,3,4,5]" class="bi bi-star-fill" [class.active-star]="s <= c.rating"></i>
+                  </div>
                 </div>
                 
-                <button class="btn-delete-cmt" *ngIf="c.isCurrentUser" (click)="deleteComment(c)" title="Xóa bình luận">
+                <button class="btn-delete-cmt" 
+                        *ngIf="c.isCurrentUser" 
+                        (click)="deleteComment(c)" 
+                        title="Xóa bình luận của bạn">
                   <i class="bi bi-trash"></i>
                 </button>
-              </div>
+                </div>
               
-              <span class="comment-date">{{c.date | date:'shortDate'}}</span>
+              <span class="comment-date">{{c.date | date:'dd/MM/yyyy HH:mm'}}</span>
               <p class="comment-content">{{c.content}}</p>
             </div>
           </div>
-          <div *ngIf="comments.length === 0" class="no-comments">Chưa có đánh giá nào. Hãy là người đầu tiên!</div>
+          
+          <div *ngIf="comments.length === 0" class="no-comments">
+            Chưa có đánh giá nào. Hãy là người đầu tiên!
+          </div>
         </div>
       </div>
     </div>
@@ -141,9 +147,6 @@
              (mouseleave)="tempHoverRating = 0"
              (click)="setRating(star)"></i>
         </div>
-        <p class="rating-label" *ngIf="tempRating > 0">
-          {{ tempRating === 5 ? 'Tuyệt vời!' : (tempRating >= 4 ? 'Rất tốt' : (tempRating >= 3 ? 'Bình thường' : 'Tệ')) }}
-        </p>
         <textarea class="review-textarea" placeholder="Hãy chia sẻ cảm nhận của bạn..." rows="4" [(ngModel)]="tempComment"></textarea>
       </div>
       <div class="modal-footer">

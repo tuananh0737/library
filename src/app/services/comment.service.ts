@@ -6,9 +6,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class CommentService {
-  private apiUrlGet = '/api/user/comments'; 
+  private apiUrlUserComments = '/api/user/comments'; 
   private apiUrlAdd = '/api/user/add-comment';
   private apiUrlDelete = '/api/user/delete-comment';
+  
+  // Endpoint Admin mới
+  private apiUrlAdminDelete = '/api/admin/delete-comment'; 
+  
+  private apiUrlGetByBook = '/api/public/find-comment-book'; 
 
   constructor(private http: HttpClient) {}
 
@@ -21,21 +26,25 @@ export class CommentService {
   }
 
   getComments(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrlGet);
+    return this.http.get<any[]>(this.apiUrlUserComments, { headers: this.getHeaders() });
   }
 
-  // Logic thêm comment được trích xuất từ BookListComponent của Connect
+  getCommentsByBook(bookId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrlGetByBook}?bookId=${bookId}`);
+  }
+
   addComment(content: string, star: number, bookId: number): Observable<any> {
-    const body = {
-      content: content,
-      star: star,
-      book: { id: bookId },
-    };
+    const body = { content, star, book: { id: bookId } };
     return this.http.post(this.apiUrlAdd, body, { headers: this.getHeaders() });
   }
 
+  // Xóa comment của chính mình (User thường)
   deleteComment(commentId: number): Observable<void> {
-    // API delete yêu cầu Authorization header nếu backend yêu cầu bảo mật
     return this.http.delete<void>(`${this.apiUrlDelete}?id=${commentId}`, { headers: this.getHeaders() });
+  }
+
+  // [MỚI] Xóa comment bất kỳ (Quyền Admin)
+  deleteCommentByAdmin(commentId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrlAdminDelete}?id=${commentId}`, { headers: this.getHeaders() });
   }
 }

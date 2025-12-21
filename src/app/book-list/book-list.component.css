@@ -114,3 +114,96 @@
 .comment-date { font-weight: 400; color: #9ca3af; font-size: 11px; display: block; margin-bottom: 6px; }
 .comment-content { font-size: 13px; color: #4b5563; margin: 0; line-height: 1.4; }
 .no-comments { font-size: 13px; color: #9ca3af; font-style: italic; text-align: center; margin-top: 10px; }
+
+/* ... Giữ nguyên các class cũ ... */
+
+/* Style cho danh sách comment */
+.comment-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #e2e8f0;
+  color: #64748b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.comment-body {
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.user-info-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-user {
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.small-stars {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+.small-stars .active-star {
+  color: #fbbf24;
+}
+
+.comment-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.comment-content {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* --- Style cho nút Xóa bình luận --- */
+.btn-delete-cmt {
+  background: none;
+  border: none;
+  color: #ef4444; /* Màu đỏ */
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0.7;
+}
+
+.btn-delete-cmt:hover {
+  opacity: 1;
+  background-color: #fee2e2; /* Nền đỏ nhạt khi hover */
+}
+
+.no-comments {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 20px;
+}
