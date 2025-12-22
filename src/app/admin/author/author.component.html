@@ -1,126 +1,117 @@
-<div class="container py-4">
-  <h1 class="mb-4">Danh sách tác giả</h1>
+<div class="admin-page-container">
   
-  <div class="mb-4">
-    <div class="input-group">
-      <input type="text" id="searchInput" class="form-control" placeholder="Search by genre.name" [(ngModel)]="searchQuery">
-      <button class="btn btn-primary" (click)="performSearch()">Tìm kiếm</button>
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Quản lý Tác giả</h2>
+    </div>
+    <div class="header-actions">
+      <div class="search-group">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Tìm tên tác giả..." [(ngModel)]="searchQuery" (input)="performSearch()">
+      </div>
+      <button class="btn-add-new" (click)="openAddAuthorForm()">
+        <i class="bi bi-plus-lg"></i> Thêm tác giả
+      </button>
     </div>
   </div>
   
-  <table class="table table-bordered table-striped">
+  <table class="table table-bordered table-striped table-hover">
     <thead class="table-light">
       <tr>
-        <th>ID</th>
+        <th style="width: 50px;">ID</th>
         <th>Họ và Tên</th>
         <th>Ngày sinh</th>
         <th>Quốc tịch</th>
-        <th>Action</th>
+        <th style="width: 120px;">Hành động</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let author of paginatedAuthors">
         <td>{{ author.id }}</td>
-        <td>{{ author.fullname }}</td>
+        <td class="fw-bold">{{ author.fullname }}</td>
         <td>{{ author.birthDay | date: 'dd/MM/yyyy' }}</td>
         <td>{{ author.nationality }}</td>
         <td>
-          <button class="btn btn-sm btn-outline-primary" (click)="openEditAuthorForm(author)">
-            <img src="assets/edit.png" alt="Edit" style="width: 20px;">
-          </button>
-          <button class="btn btn-sm btn-outline-danger" (click)="openDeleteConfirm(author.id)">
-            <img src="assets/trash.png" alt="Delete" style="width: 20px;">
-          </button>          
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" (click)="openEditAuthorForm(author)" title="Sửa">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="openDeleteConfirm(author.id)" title="Xóa">
+              <i class="bi bi-trash"></i>
+            </button> 
+          </div>         
         </td>
       </tr>
     </tbody>
   </table>
 
-<div class="pagination d-flex justify-content-center align-items-center mt-3">
-  <button 
-    class="btn btn-secondary me-2" 
-    [disabled]="currentPage === 1" 
-    (click)="goToPage(currentPage - 1)">
-    Trang trước
-  </button>
+  <div class="pagination d-flex justify-content-center align-items-center mt-4" *ngIf="totalPages > 1">
+    <button class="btn btn-secondary me-2" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+      <i class="bi bi-chevron-left"></i> Trước
+    </button>
+    <span class="mx-3">Trang {{ currentPage }} / {{ totalPages }}</span>
+    <button class="btn btn-secondary ms-2" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+      Sau <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
 
-  <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-  <button 
-    class="btn btn-secondary ms-2" 
-    [disabled]="currentPage === totalPages" 
-    (click)="goToPage(currentPage + 1)">
-    Trang sau
-  </button>
-</div>
-
-  
-  <button class="btn btn-success" (click)="openAddAuthorForm()">Thêm tác giả</button>
-
-  <div *ngIf="showAuthorForm" class="modal d-block">
+  <div *ngIf="showAuthorForm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{{ isEditing ? 'Chỉnh Sửa Tác Giả' : 'Thêm Tác Giả' }}</h5>
+          <h5 class="modal-title">{{ isEditing ? 'Chỉnh Sửa Tác Giả' : 'Thêm Tác Giả Mới' }}</h5>
           <button type="button" class="btn-close" (click)="closeAuthorForm()"></button>
         </div>
         <form (ngSubmit)="isEditing ? saveAuthor() : saveAuthor()" #authorForm="ngForm">
           <div class="modal-body">
             <div class="mb-3">
-              <label for="fullname" class="form-label">Họ và Tên:</label>
-              <input type="text" id="fullname" class="form-control" [(ngModel)]="currentAuthor.fullname" name="fullname" required #fullname="ngModel">
-              <div *ngIf="fullname.invalid" class="text-danger">Họ và tên là bắt buộc</div>
+              <label class="form-label">Họ và Tên <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="currentAuthor.fullname" name="fullname" required #fullname="ngModel">
+              <div *ngIf="fullname.invalid && (fullname.dirty || fullname.touched)" class="text-danger small">Họ tên là bắt buộc</div>
             </div>
             <div class="mb-3">
-              <label for="birthDay" class="form-label">Ngày sinh:</label>
-              <input type="date" id="birthDay" class="form-control" [(ngModel)]="currentAuthor.birthDay" name="birthDay" required #birthDay="ngModel">
-              <div *ngIf="birthDay.invalid" class="text-danger">Ngày sinh là bắt buộc</div>
+              <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" [(ngModel)]="currentAuthor.birthDay" name="birthDay" required #birthDay="ngModel">
             </div>
             <div class="mb-3">
-              <label for="nationality" class="form-label">Quốc tịch:</label>
-              <input type="text" id="nationality" class="form-control" [(ngModel)]="currentAuthor.nationality" name="nationality" required #nationality="ngModel">
-              <div *ngIf="nationality.invalid" class="text-danger">Quốc tịch là bắt buộc</div>
+              <label class="form-label">Quốc tịch <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="currentAuthor.nationality" name="nationality" required #nationality="ngModel">
             </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" [disabled]="authorForm.invalid">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
-            <button type="button" class="btn btn-secondary" (click)="closeAuthorForm()">Cancel</button>
+            <button type="button" class="btn btn-secondary" (click)="closeAuthorForm()">Hủy</button>
+            <button type="submit" class="btn btn-primary" [disabled]="authorForm.invalid">{{ isEditing ? 'Cập Nhật' : 'Lưu lại' }}</button>
           </div>
         </form>
       </div>
     </div>
   </div>
   
-  
-
-  <div *ngIf="showDeleteConfirm" class="modal d-block" tabindex="-1">
-    <div class="modal-dialog">
+  <div *ngIf="showDeleteConfirm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Xác nhận xóa</h5>
+          <h5 class="modal-title text-danger">Xác nhận xóa</h5>
         </div>
         <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa <strong>{{ selectAuthor?.fullname }}</strong> không?</p>
+          <p>Bạn có chắc chắn muốn xóa tác giả <strong>{{ selectAuthor?.fullname }}</strong> không?</p>
+          <small class="text-muted">Hành động này không thể hoàn tác.</small>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-danger" (click)="confirmDelete()">Có</button>
           <button class="btn btn-secondary" (click)="cancel()">Không</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Xóa ngay</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="deleteSuccessful || updateSuccessful" class="modal d-block" tabindex="-1">
-    <div class="modal-dialog">
+  <div *ngIf="deleteSuccessful || updateSuccessful" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">{{ deleteSuccessful ? 'Xóa Thành Công' : 'Cập Nhật Thành Công' }}</h5>
-        </div>
-        <div class="modal-body">
-          <p>{{ deleteSuccessful ? 'Xóa Tác giả thành công' : 'Cập nhật Tác giả thành công' }}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="cancel()">Đóng</button>
+        <div class="modal-body text-center py-4">
+           <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+           <h5 class="mt-3">{{ deleteSuccessful ? 'Đã xóa thành công' : 'Cập nhật thành công' }}</h5>
+           <button class="btn btn-secondary mt-3" (click)="cancel()">Đóng</button>
         </div>
       </div>
     </div>

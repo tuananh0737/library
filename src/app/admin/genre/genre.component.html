@@ -1,116 +1,111 @@
-<div class="container py-4">
-  <h1 class="mb-4">Danh sách Thể Loại</h1>
+<div class="admin-page-container">
 
-  <div class="mb-4">
-    <div class="input-group">
-      <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tên thể loại" 
-        [(ngModel)]="searchQuery"
-      >
-      <button class="btn btn-primary" (click)="performSearch()">Tìm kiếm</button>
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Quản lý Thể loại</h2>
+    </div>
+    <div class="header-actions">
+      <div class="search-group">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Tìm tên thể loại..." [(ngModel)]="searchQuery" (input)="performSearch()">
+      </div>
+      <button class="btn-add-new" (click)="openAddGenreForm()">
+        <i class="bi bi-plus-lg"></i> Thêm thể loại
+      </button>
     </div>
   </div>
 
-  <table class="table table-bordered table-striped">
+  <table class="table table-bordered table-striped table-hover">
     <thead class="table-light">
       <tr>
-        <th>ID</th>
-        <th>Tên Thể Loại</th>
-        <th>Chi Tiết</th>
-        <th>Hành Động</th>
+        <th style="width: 50px;">ID</th>
+        <th style="width: 200px;">Tên Thể Loại</th>
+        <th>Mô tả / Chi Tiết</th>
+        <th style="width: 120px;">Hành Động</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let genre of paginatedGenres">
         <td>{{ genre.id }}</td>
-        <td>{{ genre.name }}</td>
-        <td>{{ genre.details }}</td>
+        <td class="fw-bold text-primary">{{ genre.name }}</td>
+        <td>{{ genre.details || 'Chưa có mô tả' }}</td>
         <td>
-          <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditGenreForm(genre)">
-            <img src="assets/edit.png" alt="Edit" style="width: 20px;">
-          </button>
-          <button class="btn btn-sm btn-outline-danger" (click)="openDeleteConfirm(genre.id)">
-            <img src="assets/trash.png" alt="Delete" style="width: 20px;">
-          </button>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" (click)="openEditGenreForm(genre)" title="Sửa">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="openDeleteConfirm(genre.id)" title="Xóa">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
         </td>
       </tr>
     </tbody>
   </table>
 
-  <div class="pagination d-flex justify-content-center align-items-center mt-3">
-    <button 
-      class="btn btn-secondary me-2" 
-      [disabled]="currentPage === 1" 
-      (click)="goToPage(currentPage - 1)"
-    >
-      Trang trước
+  <div class="pagination d-flex justify-content-center align-items-center mt-4" *ngIf="totalPages > 1">
+    <button class="btn btn-secondary me-2" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+      <i class="bi bi-chevron-left"></i> Trước
     </button>
-
-    <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-    <button 
-      class="btn btn-secondary ms-2" 
-      [disabled]="currentPage === totalPages" 
-      (click)="goToPage(currentPage + 1)"
-    >
-      Trang sau
+    <span class="mx-3">Trang {{ currentPage }} / {{ totalPages }}</span>
+    <button class="btn btn-secondary ms-2" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+      Sau <i class="bi bi-chevron-right"></i>
     </button>
   </div>
 
-  <button class="btn btn-success mt-3" (click)="openAddGenreForm()">Thêm Thể Loại</button>
-
-  <div *ngIf="showGenreForm" class="modal d-block" tabindex="-1">
+  <div *ngIf="showGenreForm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{{ isEditing ? 'Cập Nhật Thể Loại' : 'Thêm Thể Loại' }}</h5>
+          <h5 class="modal-title">{{ isEditing ? 'Cập Nhật Thể Loại' : 'Thêm Thể Loại Mới' }}</h5>
           <button type="button" class="btn-close" (click)="closeGenreForm()"></button>
         </div>
         <div class="modal-body">
           <form (ngSubmit)="isEditing ? saveGenre() : saveGenre()" #genreForm="ngForm">
             <div class="mb-3">
-              <label for="name" class="form-label">Tên Thể Loại</label>
-              <input type="text" id="name" class="form-control" [(ngModel)]="currentGenre.name"  name="name" required #name="ngModel">
-              <div *ngIf="name.invalid" class="text-danger">Tên Thể Loại là bắt buộc</div>
+              <label class="form-label">Tên Thể Loại <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="currentGenre.name" name="name" required #name="ngModel" placeholder="Ví dụ: Khoa học viễn tưởng">
+              <div *ngIf="name.invalid && (name.dirty || name.touched)" class="text-danger small">Tên thể loại không được để trống</div>
             </div>
             <div class="mb-3">
-              <label for="details" class="form-label">Chi Tiết</label>
-              <textarea id="details" class="form-control" [(ngModel)]="currentGenre.details" name="details"></textarea>
+              <label class="form-label">Mô tả</label>
+              <textarea class="form-control" [(ngModel)]="currentGenre.details" name="details" rows="3" placeholder="Mô tả ngắn về thể loại này..."></textarea>
             </div>
-            <button type="submit" class="btn btn-primary" [disabled]="genreForm.invalid">{{ isEditing ? 'Cập Nhật' : 'Thêm' }}</button>
-            <button type="button" class="btn btn-secondary" (click)="closeGenreForm()">Hủy</button>
+            <div class="modal-footer px-0 pb-0">
+               <button type="button" class="btn btn-secondary" (click)="closeGenreForm()">Hủy</button>
+               <button type="submit" class="btn btn-primary" [disabled]="genreForm.invalid">{{ isEditing ? 'Cập Nhật' : 'Lưu lại' }}</button>
+            </div>
           </form>
         </div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="showDeleteConfirm" class="modal d-block" tabindex="-1">
-    <div class="modal-dialog">
+  <div *ngIf="showDeleteConfirm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Xác Nhận Xóa</h5>
+          <h5 class="modal-title text-danger">Xác Nhận Xóa</h5>
         </div>
         <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa thể loại này?</p>
+          <p>Bạn có chắc chắn muốn xóa thể loại này không?</p>
+          <p class="text-muted small">Lưu ý: Việc này có thể ảnh hưởng đến các cuốn sách đang thuộc thể loại này.</p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
           <button class="btn btn-secondary" (click)="cancel()">Hủy</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Xóa ngay</button>
         </div>
       </div>
     </div>
   </div>
-  <div *ngIf="deleteSuccessful || updateSuccessful" class="modal d-block" tabindex="-1">
-    <div class="modal-dialog">
+
+  <div *ngIf="deleteSuccessful || updateSuccessful" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">{{ deleteSuccessful ? 'Xóa Thành Công' : 'Cập Nhật Thành Công' }}</h5>
-        </div>
-        <div class="modal-body">
-          <p>{{ deleteSuccessful ? 'Xóa Thể loại thành công' : 'Cập nhật Thể loại thành công' }}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="cancel()">Đóng</button>
+         <div class="modal-body text-center py-4">
+           <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+           <h5 class="mt-3">{{ deleteSuccessful ? 'Đã xóa thành công' : 'Cập nhật thành công' }}</h5>
+           <button class="btn btn-primary mt-3" (click)="cancel()">Đóng</button>
         </div>
       </div>
     </div>

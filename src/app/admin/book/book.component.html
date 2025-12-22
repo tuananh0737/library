@@ -1,10 +1,18 @@
-<div class="container">
-  <h2 class="text-center mb-4 position-relative">
-    <span class="title-decoration">Tìm kiếm</span>
-  </h2> 
-   <div class="input-group mb-4">
-    <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tên sách, tác giả hoặc thể loại"  [(ngModel)]="searchQuery">
-    <button class="btn btn-primary" (click)="performSearch()">Tìm kiếm</button>
+<div class="admin-page-container">
+  
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Quản lý Sách</h2>
+    </div>
+    <div class="header-actions">
+      <div class="search-group">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Tìm tên sách, tác giả..." [(ngModel)]="searchQuery" (input)="performSearch()">
+      </div>
+      <button class="btn-add-new" (click)="openAddBookForm()">
+        <i class="bi bi-plus-lg"></i> Thêm sách mới
+      </button>
+    </div>
   </div>
 
   <table class="table table-bordered table-hover">
@@ -14,242 +22,187 @@
         <th>Tác giả</th>
         <th>Thể loại</th>
         <th>Số trang</th>
-        <th>Năm phát hành</th>
-        <th>Chi tiết </th>
+        <th>Năm</th>
+        <th>Chi tiết</th>
         <th>Số lượng</th>
         <th>Hành động</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let book of paginatedBooks; trackBy: trackByBookId">
-        <td>{{ book.name }}</td>
-        <td>{{ book.author.fullname }} ({{ book.author.nationality }})</td>
-        <td>{{ book.genres.name }}</td>
+        <td class="fw-bold">{{ book.name }}</td>
+        <td>{{ book.author.fullname }}</td>
+        <td><span class="badge bg-light text-dark border">{{ book.genres.name }}</span></td>
         <td>{{ book.numberPage }}</td>
         <td>{{ book.publishYear }}</td>
         <td>
-          <button class="btn btn-info btn-sm" (click)="showDetails(book)">View</button>
+          <button class="btn btn-sm btn-info text-white" (click)="showDetails(book)"><i class="bi bi-eye"></i> Xem</button>
         </td>
         <td>{{ book.quantity }}</td>
         <td>
-          <div class="action-buttons">
-            <button class="btn btn-sm btn-outline-primary" (click)="openEditBookForm(book)">
-              <img src="assets/edit.png" alt="Edit" style="width: 20px;">
+          <div class="action-buttons d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" (click)="openEditBookForm(book)" title="Sửa">
+              <i class="bi bi-pencil-square"></i>
             </button>
-            <button class="btn btn-sm btn-outline-danger" (click)="deleteBook(book.id)">
-              <img src="assets/trash.png" alt="Delete" style="width: 20px;">
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteBook(book.id)" title="Xóa">
+              <i class="bi bi-trash"></i>
             </button>
           </div>
         </td>
       </tr>
     </tbody>
   </table>
-  <button class="btn btn-success mb-4" (click)="openAddBookForm()">Thêm sách</button>
 
-</div>
-
-<div class="pagination d-flex justify-content-center align-items-center mt-3">
-  <button 
-    class="btn btn-secondary me-2" 
-    [disabled]="currentPage === 1" 
-    (click)="goToPage(currentPage - 1)">
-    Trang trước
-  </button>
-
-  <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-  <button 
-    class="btn btn-secondary ms-2" 
-    [disabled]="currentPage === totalPages" 
-    (click)="goToPage(currentPage + 1)">
-    Trang sau
-  </button>
-</div>
-
-<div *ngIf="showDeleteConfirm" class="modal fade show d-block" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa <strong>{{ selectedBook?.name }}</strong> không?</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-danger" (click)="confirmDelete()">Có</button>
-          <button class="btn btn-secondary" (click)="cancelDelete()">Không</button>
-        </div>
-      </div>
-    </div>
+  <div class="pagination d-flex justify-content-center align-items-center mt-4" *ngIf="totalPages > 1">
+    <button class="btn btn-secondary me-2" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+      <i class="bi bi-chevron-left"></i> Trước
+    </button>
+    <span class="mx-3 fw-bold">Trang {{ currentPage }} / {{ totalPages }}</span>
+    <button class="btn btn-secondary ms-2" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+      Sau <i class="bi bi-chevron-right"></i>
+    </button>
   </div>
 
-
-  <div *ngIf="deleteSuccessful" class="modal fade show d-block" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-body">
-          <p>Xóa Tác giả thành công</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" (click)="cancelDelete()">Đóng</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  
-
-  <div class="modal fade show d-block" *ngIf="selectedBook">
-    <div class="modal-dialog">
+  <div *ngIf="showDeleteConfirm" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Thông tin chi tiết sách</h5>
+          <h5 class="modal-title text-danger">Xác nhận xóa</h5>
+        </div>
+        <div class="modal-body">
+          <p>Bạn có chắc chắn muốn xóa sách <strong>{{ selectedBook?.name }}</strong> không?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cancelDelete()">Hủy</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Xóa ngay</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="deleteSuccessful" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center py-4">
+          <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+          <h4 class="mt-2">Thành công!</h4>
+          <p>Thao tác đã được thực hiện.</p>
+          <button class="btn btn-primary mt-2" (click)="cancelDelete()">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade show d-block" *ngIf="selectedBook" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Thông tin chi tiết</h5>
           <button class="btn-close" (click)="closeForm()"></button>
         </div>
-        <!-- <div class="modal-body">
-          <p><strong>Tên sách:</strong> {{ selectedBook.name }}</p>
-          <p><strong>Tác giả:</strong> {{ selectedBook.author.fullname }}</p>
-          <p><strong>Thể loại:</strong> {{ selectedBook.genres.name }}</p>
-          <p><strong>Số trang:</strong> {{ selectedBook.numberPage }}</p>
-          <p><strong>Năm phát hành:</strong> {{ selectedBook.publishYear }}</p>
-          <p><strong>Mô tả:</strong> {{ selectedBook.description }}</p>
-          <p><strong>Số lượng:</strong> {{ selectedBook.quantity }}</p>
-          <p><strong>Mã QR:</strong></p>
-          <img *ngIf="selectedBook.qrCode" [src]="'data:image/png;base64,' + selectedBook.qrCode" alt="QR Code" class="img-fluid" />
-        </div> -->
-        <div class="book-details-grid">
-          <div class="label">Tên sách:</div>
-          <div class="value">{{ selectedBook.name }}</div>
-      
-          <div class="label">Số trang:</div>
-          <div class="value">{{ selectedBook.numberPage }}</div>
-      
-          <div class="label">Năm phát hành:</div>
-          <div class="value">{{ selectedBook.publishYear }}</div>
-      
-          <div class="label">Mô tả:</div>
-          <div class="value">{{ selectedBook.description }}</div>
-      
-          <div class="label">Số lượng:</div>
-          <div class="value">{{ selectedBook.quantity }}</div>
-      
-          <div class="label">Tác giả:</div>
-          <div class="value">
-            {{ selectedBook.author.fullname }} 
-          </div>
-      
-          <div class="label">Thể loại:</div>
-          <div class="value">
-            {{ selectedBook.genres.name }} 
-          </div>
-      
-          <div class="label">Vị trí:</div>
-          <div class="value">
-            {{ selectedBook.location.room }}, {{ selectedBook.location.shelf }}
-          </div>
-
-          <div class="label">Mã QR:</div>
-          <div class="value">
-            <img *ngIf="selectedBook.qrCode" [src]="'data:image/png;base64,' + selectedBook.qrCode" alt="QR Code" class="img-fluid" />
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-primary" (click)="borrow(selectedBook)">Mượn sách</button>
-            <button class="btn btn-secondary" (click)="closeForm()">Đóng</button>
+        <div class="modal-body">
+          <div class="book-details-grid">
+             <div class="row mb-2"><div class="col-3 fw-bold">Tên sách:</div><div class="col-9">{{ selectedBook.name }}</div></div>
+             <div class="row mb-2"><div class="col-3 fw-bold">Tác giả:</div><div class="col-9">{{ selectedBook.author.fullname }}</div></div>
+             <div class="row mb-2"><div class="col-3 fw-bold">Thể loại:</div><div class="col-9">{{ selectedBook.genres.name }}</div></div>
+             <div class="row mb-2"><div class="col-3 fw-bold">Năm XB:</div><div class="col-9">{{ selectedBook.publishYear }}</div></div>
+             <div class="row mb-2"><div class="col-3 fw-bold">Số lượng:</div><div class="col-9">{{ selectedBook.quantity }}</div></div>
+             <div class="row mb-2"><div class="col-3 fw-bold">Vị trí:</div><div class="col-9">Phòng {{ selectedBook.location.room }} - Kệ {{ selectedBook.location.shelf }}</div></div>
+             <div class="row mb-2"><div class="col-3 fw-bold">Mô tả:</div><div class="col-9">{{ selectedBook.description }}</div></div>
+             <div class="row mb-2" *ngIf="selectedBook.qrCode">
+                <div class="col-3 fw-bold">Mã QR:</div>
+                <div class="col-9"><img [src]="'data:image/png;base64,' + selectedBook.qrCode" alt="QR Code" style="width: 100px;"/></div>
+             </div>
           </div>
         </div>
-      </div>             
+        <div class="modal-footer">
+          <button class="btn btn-primary" (click)="borrow(selectedBook)">Mượn sách</button>
+          <button class="btn btn-secondary" (click)="closeForm()">Đóng</button>
+        </div>
       </div>
     </div>
-  
+  </div>
 
-  <div *ngIf="showBorrowBook" class="modal fade show d-block">
+  <div *ngIf="showBorrowBook" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Form mượn sách</h5>
+          <h5 class="modal-title">Mượn sách: {{ selectedBook?.name }}</h5>
           <button class="btn-close" (click)="closeBorrowBookForm()"></button>
         </div>
         <div class="modal-body">
-          <p><strong>Sách:</strong> {{ selectedBook?.name }}</p>
           <div class="input-group mb-3">
-            <input 
-              type="text" 
-              id="searchUserInput" 
-              class="form-control" 
-              placeholder="Search by name, idCard, or phone" 
-              [(ngModel)]="userSearchQuery">
-            <button class="btn btn-primary" (click)="searchUser()">Tìm kiếm</button>
+            <input type="text" class="form-control" placeholder="Tìm người đọc (Tên, CMND, SĐT)..." [(ngModel)]="userSearchQuery">
+            <button class="btn btn-primary" (click)="searchUser()">Tìm</button>
           </div>
-          <div *ngIf="users.length > 0">
-            <h5>Kết quả tìm kiếm:</h5>
-            <ul class="list-group">
-              <li 
-                *ngFor="let user of users" 
-                [class.active]="selectedUserId === user.id" 
-                class="list-group-item" 
-                (click)="selectUser(user.id)">
-                <strong>{{ user.fullname }}</strong> - {{ user.phone }} - {{ user.idCard }}
+          <ul class="list-group" *ngIf="users.length > 0">
+              <li *ngFor="let user of users" class="list-group-item list-group-item-action" 
+                  [class.active]="selectedUserId === user.id" (click)="selectUser(user.id)" style="cursor: pointer;">
+                <strong>{{ user.fullname }}</strong> <br> <small>{{ user.phone }} - {{ user.idCard }}</small>
               </li>
-            </ul>
-          </div>
+          </ul>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary" (click)="confirmBorrow()">Xác nhận</button>
           <button class="btn btn-secondary" (click)="closeBorrowBookForm()">Hủy</button>
+          <button class="btn btn-primary" (click)="confirmBorrow()">Xác nhận mượn</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="showAddBookForm" class="modal fade show d-block">
-    <div class="modal-dialog">
+  <div *ngIf="showAddBookForm" class="modal fade show d-block" style="background: rgba(0,0,0,0.5); overflow-y: auto;">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Nhập thông tin sách mới</h5>
+          <h5 class="modal-title">Thông tin sách</h5>
           <button class="btn-close" (click)="closeAddBookForm()"></button>
         </div>
         <div class="modal-body">
           <form (ngSubmit)="saveNewBook()">
             <div class="mb-3">
-              <label class="form-label">Tên sách:</label>
+              <label class="form-label">Tên sách <span class="text-danger">*</span></label>
               <input type="text" class="form-control" [(ngModel)]="newBook.name" name="name" required />
             </div>                
-                <div class="mb-3">
-                  <label class="form-label">Tác giả:</label>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Tác giả <span class="text-danger">*</span></label>
                   <select class="form-select" [(ngModel)]="newBook.author.id" name="author" required>
-                    <option *ngFor="let author of authors" [value]="author.id">
-                      {{ author.fullname }}
-                    </option>
+                    <option *ngFor="let author of authors" [value]="author.id">{{ author.fullname }}</option>
                   </select>
                 </div>
-                
-                <div class="mb-3">
-                  <label class="form-label">Thể loại:</label>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Thể loại <span class="text-danger">*</span></label>
                   <select class="form-select" [(ngModel)]="newBook.genres.id" name="genre" required>
-                    <option *ngFor="let genre of genres" [value]="genre.id">
-                      {{ genre.name }}
-                    </option>
+                    <option *ngFor="let genre of genres" [value]="genre.id">{{ genre.name }}</option>
                   </select>
                 </div>
-                
-            <div class="mb-3">
-              <label class="form-label">Số trang:</label>
-              <input type="number" class="form-control" [(ngModel)]="newBook.numberPage" name="pages" required />
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Số trang</label>
+                  <input type="number" class="form-control" [(ngModel)]="newBook.numberPage" name="pages" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Năm phát hành</label>
+                  <input type="number" class="form-control" [(ngModel)]="newBook.publishYear" name="year" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Số lượng nhập</label>
+                  <input type="number" class="form-control" [(ngModel)]="newBook.quantity" name="quantity" required />
+                </div>
             </div>
             <div class="mb-3">
-              <label class="form-label">Năm phát hành:</label>
-              <input type="number" class="form-control" [(ngModel)]="newBook.publishYear" name="year" required />
+              <label class="form-label">Mô tả chi tiết</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="newBook.description" name="details"></textarea>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Mô tả:</label>
-              <textarea class="form-control" [(ngModel)]="newBook.description" name="details" required></textarea>
+            
+            <div class="modal-footer px-0 pb-0">
+               <button type="button" class="btn btn-secondary" (click)="closeAddBookForm()">Hủy bỏ</button>
+               <button type="submit" class="btn btn-success">Lưu thông tin</button>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Số lượng:</label>
-              <input type="number" class="form-control" [(ngModel)]="newBook.quantity" name="quantity" required />
-            </div>
-            <button type="submit" class="btn btn-success">Xác nhận</button>
-            <button type="button" class="btn btn-secondary" (click)="closeAddBookForm()">Hủy</button>
           </form>
         </div>
       </div>
     </div>
   </div>
+</div>

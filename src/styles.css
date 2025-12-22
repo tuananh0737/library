@@ -1,41 +1,123 @@
-/* Import Bootstrap (nếu bạn đang dùng npm thì giữ nguyên, nếu không thì import ở đây) */
-/* Reset cơ bản & CSS Variables */
-:root {
-  --bg-app: #f3f4f6;          /* Màu nền tổng thể xám nhạt */
-  --bg-sidebar: #ffffff;      /* Sidebar trắng */
-  --bg-panel: #ffffff;        /* Panel chi tiết trắng */
-  
-  --primary-color: #1e3a8a;   /* Xanh dương đậm (Deep Blue) - Accent */
-  --primary-light: #3b82f6;   /* Xanh sáng hơn cho hover */
-  --text-main: #1f2937;       /* Chữ đen xám (không đen tuyền) */
-  --text-muted: #6b7280;      /* Chữ phụ xám nhạt */
-  
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --radius-card: 16px;        /* Bo góc lớn */
-  --radius-btn: 8px;
+/* Tùy chỉnh thanh cuộn cho giống Web App hiện đại */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
 }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-app);
-  color: var(--text-main);
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* Ẩn scroll body để app tự scroll bên trong */
-  height: 100vh;
-}
-
-/* Scrollbar đẹp hơn */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 10px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #dee2e6;
+  border-radius: 20px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #adb5bd;
+}
+
+/* Tinh chỉnh Bootstrap Nav Pills */
+.nav-pills .nav-link {
+  color: #64748b; /* Slate color */
+  font-weight: 500;
+  border-radius: 12px; /* Bo góc nút menu */
+  padding: 12px 16px;
+  margin-bottom: 4px;
+}
+.nav-pills .nav-link:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+.nav-pills .nav-link.active {
+  background-color: #0d6efd; /* Bootstrap Primary hoặc màu bạn chọn */
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(13, 110, 253, 0.2);
+}
+
+/* Input Search đẹp hơn */
+.form-control:focus {
+  box-shadow: none;
+  border-color: #dee2e6;
+  background-color: #fff;
+}
+.input-group-text {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+/* --- ADMIN PAGE HEADER (Dùng chung) --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background-color: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.header-left h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.header-left p {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Search Box chuẩn */
+.search-group {
+  position: relative;
+}
+
+.search-group input {
+  padding: 10px 16px 10px 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 250px;
+  transition: all 0.2s;
+}
+
+.search-group input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.search-group i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+/* Nút Thêm mới chuẩn */
+.btn-add-new {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add-new:hover {
+  background-color: var(--primary-light);
 }
