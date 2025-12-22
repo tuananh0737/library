@@ -1,51 +1,72 @@
 <div class="sign-up-container">
   <div class="sign-up-box">
-    <h2>Đăng ký tài khoản</h2>
+    <div class="brand-logo">
+      <div class="logo-icon"><i class="bi bi-book-half"></i></div>
+    </div>
+    
+    <h2>Tạo tài khoản mới</h2>
+    <!-- <p class="subtitle">Tham gia cộng đồng đọc sách ngay hôm nay</p> -->
 
     <form (ngSubmit)="onSignUp()">
       <div class="form-group">
-        <label for="username">Tài khoản</label>
-        <input type="email" id="username" [(ngModel)]="username" name="username" placeholder="Enter your email" required />
-      </div>
-
-      <div class="form-group">
-        <label for="password">Mật khẩu</label>
-        <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="Enter your password" required />
-      </div>
-
-      <div class="form-group">
-        <label for="reEnterPassword">Nhập lại mật khẩu</label>
-        <input type="password" id="reEnterPassword" [(ngModel)]="reEnterPassword" name="reEnterPassword" placeholder="Re-enter your password" required />
-        <div *ngIf="password && reEnterPassword && password !== reEnterPassword" class="error-message">
-           Mật khẩu không trùng khớp
+        <label for="fullname">Họ và tên</label>
+        <div class="input-wrapper">
+          <i class="bi bi-person-badge"></i>
+          <input type="text" id="fullname" [(ngModel)]="fullname" name="fullname" placeholder="Nhập họ tên đầy đủ" required />
         </div>
       </div>
 
       <div class="form-group">
-        <label for="fullname">Họ tên</label>
-        <input type="text" id="fullname" [(ngModel)]="fullname" name="fullname" placeholder="Enter your full name" required />
+        <label for="username">Tên đăng nhập (Email)</label>
+        <div class="input-wrapper">
+          <i class="bi bi-envelope"></i>
+          <input type="email" id="username" [(ngModel)]="username" name="username" placeholder="Nhập email của bạn" required />
+        </div>
       </div>
 
-      <button type="submit" class="sign-up-btn" [disabled]="loading || password !== reEnterPassword">
-        <span *ngIf="loading">Đang đăng ký</span>
-        <span *ngIf="!loading">Đăng ký </span>
+      <div class="form-group">
+        <label for="password">Mật khẩu</label>
+        <div class="input-wrapper">
+          <i class="bi bi-lock"></i>
+          <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="Tạo mật khẩu" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reEnterPassword">Xác nhận mật khẩu</label>
+        <div class="input-wrapper">
+          <i class="bi bi-lock-fill"></i>
+          <input type="password" id="reEnterPassword" [(ngModel)]="reEnterPassword" name="reEnterPassword" placeholder="Nhập lại mật khẩu" required />
+        </div>
+        <div *ngIf="password && reEnterPassword && password !== reEnterPassword" class="field-error">
+           <i class="bi bi-x-circle"></i> Mật khẩu không trùng khớp
+        </div>
+      </div>
+
+      <button type="submit" class="sign-up-btn" [disabled]="loading || (password && reEnterPassword && password !== reEnterPassword)">
+        <span *ngIf="loading"><i class="bi bi-arrow-repeat spin"></i> Đang đăng ký...</span>
+        <span *ngIf="!loading">Đăng ký tài khoản</span>
       </button>
-      <p>Bạn đã có tài khoản ?<a routerLink="/login">Đăng nhập</a></p>
+
+      <div class="login-redirect">
+        Đã có tài khoản? <a routerLink="/login">Đăng nhập ngay</a>
+      </div>
     </form>
   </div>
 </div>
 
 <div *ngIf="showOverlay" class="overlay">
-  <div class="overlay-content">
-    <h3>Đăng ký thành công</h3>
-    <button (click)="redirectToLogin()" class="overlay-btn">Đến đăng nhập</button>
+  <div class="overlay-content success">
+    <div class="icon-circle success"><i class="bi bi-check-lg"></i></div>
+    <h3>Đăng ký thành công!</h3>
+    <button (click)="redirectToLogin()" class="overlay-btn success-btn">Đến trang đăng nhập</button>
   </div>
 </div>
 
 <div *ngIf="showUsernameExistsOverlay" class="overlay">
-  <div class="overlay-content">
-    <h3>Tên đăng nhập đã tồn tại.</h3>
-    <button (click)="closeOverlay()" class="overlay-btn">Đóng</button>
+  <div class="overlay-content error">
+    <div class="icon-circle error"><i class="bi bi-exclamation-lg"></i></div>
+    <h3>Tên đăng nhập đã tồn tại</h3>
+    <button (click)="closeOverlay()" class="overlay-btn error-btn">Thử lại</button>
   </div>
 </div>
-

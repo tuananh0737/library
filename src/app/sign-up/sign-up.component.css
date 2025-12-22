@@ -1,206 +1,205 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Arial', sans-serif;
-  background-color: #f4f4f4; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
+/* Tận dụng lại style của Login để nhất quán */
 .sign-up-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #fff, #37b23f); 
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%); /* Blue gradient nhẹ */
 }
 
 .sign-up-box {
-  background: rgba(255, 255, 255, 0.8); 
-  padding: 30px;
-  border-radius: 10px;
-  width: 400px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 450px; /* Rộng hơn login một chút */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   text-align: center;
 }
 
-h2 {
-  color: #333;
+.brand-logo {
+  display: flex;
+  justify-content: center;
   margin-bottom: 20px;
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 24px;
-  font-weight: bold;
+}
+
+h2 {
+  color: var(--text-main);
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 30px;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   text-align: left;
 }
 
 label {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
   display: block;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 18px;
 }
 
 input {
   width: 100%;
-  padding: 12px;
-  margin-top: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  padding: 12px 12px 12px 44px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
   font-size: 14px;
+  transition: all 0.2s;
+  background-color: #f9fafb;
 }
 
 input:focus {
-  border-color: #2575fc; 
+  border-color: var(--primary-color);
+  background-color: white;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-button {
+.field-error {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sign-up-btn {
   width: 100%;
-  padding: 12px;
-  background-color: #2575fc;
+  padding: 14px;
+  background-color: var(--primary-color);
   color: #fff;
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: bold;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
+  margin-top: 10px;
 }
 
-button:disabled {
-  background-color: #aaa;
+.sign-up-btn:hover {
+  background-color: var(--primary-light);
+}
+
+.sign-up-btn:disabled {
+  background-color: #9ca3af;
   cursor: not-allowed;
 }
 
-button:hover {
-  background-color: #6a11cb; 
-}
-
-a {
-  color: #2575fc;
-  text-decoration: none;
+.login-redirect {
+  margin-top: 24px;
   font-size: 14px;
-  display: block;
-  margin-top: 10px;
+  color: var(--text-muted);
 }
 
-a:hover {
+.login-redirect a {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-redirect a:hover {
   text-decoration: underline;
 }
 
-.separator {
-  margin: 20px 0;
-  font-size: 14px;
-  color: #333;
-}
-
-.separator span {
-  background-color: #fff;
-  padding: 0 10px;
-}
-
-.google-login-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #db4437;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.google-login-btn img {
-  width: 20px;
-  margin-right: 10px;
-}
-
-.google-login-btn:hover {
-  background-color: #c1351d; 
-}
-
-.success-message {
-  color: green;
-  font-size: 14px;
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-.error-message {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
-}
-
+/* OVERLAY STYLES - Làm mới cho đẹp hơn */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); 
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px); /* Hiệu ứng mờ nền phía sau */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  visibility: visible;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .overlay-content {
   background-color: white;
-  padding: 20px;
-  border-radius: 10px;
+  padding: 30px;
+  border-radius: 20px;
   text-align: center;
-  width: 300px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.overlay-btn {
-  background-color: #4CAF50; 
-  color: white;
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  font-size: 30px;
 }
 
-.overlay-btn:hover {
-  background-color: #45a049;
-}
-
-.error-message {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
-}
+.icon-circle.success { background-color: #dcfce7; color: #16a34a; }
+.icon-circle.error { background-color: #fee2e2; color: #ef4444; }
 
 .overlay-content h3 {
-  color: #f44336; 
-}
-
-.overlay-content p {
-  color: #f44336;
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: var(--text-main);
 }
 
 .overlay-btn {
-  background-color: #f44336; 
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
 }
 
-.overlay-btn:hover {
-  background-color: #d32f2f; 
-}
+.overlay-btn.success-btn { background-color: var(--primary-color); color: white; }
+.overlay-btn.error-btn { background-color: #ef4444; color: white; }
+.overlay-btn:hover { opacity: 0.9; }
