@@ -1,123 +1,155 @@
-<div class="container mt-5">
-    <div class="text-center mb-4">
-      <h1 class="display-6">Thống kê thư viện</h1>
-    </div>
+<div class="admin-page-container">
   
-    <div class="row text-center mb-4">
-      <div class="col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Sách khả dụng</h5>
-            <p class="display-5 text-primary">{{ statistics?.totalAvailableBooks }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Sách đang mượn</h5>
-            <p class="display-5 text-warning">{{ statistics?.booksCurrentlyBorrowed }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Thành viên</h5>
-            <p class="display-5 text-success">{{ statistics?.totalRegisteredUsers }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Sách đã mượn</h5>
-            <p class="display-5 text-danger">{{ statistics?.totalBorrowedBooks }}</p>
-          </div>
-        </div>
-      </div>
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Tổng quan Thư viện</h2>
+      <p>Thống kê số liệu hoạt động</p>
     </div>
-  
-    <div class="row">
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header bg-primary text-white">
-            <h5>Trạng thái mượn</h5>
-          </div>
-          <!-- <div class="card-body">
-            <canvas id="borrowStatusChart" width="300" height="300"></canvas>
-          </div> -->
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">Trả đúng hạn: {{ statistics?.returnedOnTime }}</li>
-            <li class="list-group-item">Trả quá hạn: {{ statistics?.returnedLate }}</li>
-            <li class="list-group-item">Chưa trả: {{ statistics?.notReturned }}</li>
-          </ul>
-        </div>
+    <div class="header-actions">
+      <div class="date-display">
+         <i class="bi bi-calendar-event"></i> Năm: {{ selectedYear }}
       </div>
-  
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header bg-success text-white">
-            <h5>Sách mượn nhiều nhất</h5>
-          </div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item" *ngFor="let book of statistics?.topBooks">
-              {{ book[0] }} - <span class="badge bg-primary">{{ book[1] }}</span>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <button class="btn btn-light border" (click)="ngOnInit()" title="Tải lại">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
     </div>
-  
-    <!-- Người dùng mượn nhiều -->
-    <div class="mt-4">
-      <div class="card shadow-sm">
-        <div class="card-header bg-info text-white">
-          <h5>Người dùng mượn nhiều sách nhất</h5>
-        </div>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item" *ngFor="let user of statistics?.topUsers">
-            {{ user[0] }} - <span class="badge bg-warning">{{ user[1] }}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
+  </div>
 
-    <div class="mt-4">
-    <div class="card shadow-sm">
-      <div class="card-header bg-secondary text-white">
-        <h5>Sách mượn theo tháng</h5>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-journal-check"></i></div>
+      <div class="stat-info">
+        <h3>{{ statistics?.totalAvailableBooks || 0 }}</h3>
+        <p>Sách khả dụng</p>
       </div>
-      <div class="card-body">
-        <!-- Lựa chọn tháng và năm -->
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="monthSelect" class="form-label">Tháng</label>
-            <select id="monthSelect" class="form-select" [(ngModel)]="selectedMonth" (change)="onMonthYearChange()">
-              <option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="month">
-                {{ month }}
-              </option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label for="yearSelect" class="form-label">Năm</label>
-            <select id="yearSelect" class="form-select" [(ngModel)]="selectedYear" (change)="onMonthYearChange()">
-              <option *ngFor="let year of [2023, 2024, 2025]" [value]="year">
-                {{ year }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Thống kê theo tháng -->
-        <div *ngIf="monthlyStatistics">
-          <p>{{ monthlyStatistics }}</p>
-        </div>
-        <div *ngIf="!monthlyStatistics">
-          <p>Không có dữ liệu cho tháng đã chọn.</p>
-        </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="bi bi-journal-minus"></i></div>
+      <div class="stat-info">
+        <h3>{{ statistics?.booksCurrentlyBorrowed || 0 }}</h3>
+        <p>Đang mượn</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red"><i class="bi bi-journal-bookmark-fill"></i></div>
+      <div class="stat-info">
+        <h3>{{ statistics?.totalBorrowedBooks || 0 }}</h3>
+        <p>Lượt mượn</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-info">
+        <h3>{{ statistics?.totalRegisteredUsers || 0 }}</h3>
+        <p>Thành viên</p>
       </div>
     </div>
   </div>
+
+  <div class="row g-4 align-items-start">
+    
+    <div class="col-lg-6">
+      
+      <div class="content-card mb-4">
+        <div class="card-header-custom">
+          <h5><i class="bi bi-pie-chart-fill text-primary"></i> Trạng thái mượn trả</h5>
+        </div>
+        <div class="card-body d-flex justify-content-center align-items-center" style="height: 250px;">
+           <canvas id="borrowStatusChart"></canvas>
+        </div>
+        <div class="card-footer-custom">
+            <div class="badge-group">
+                <span class="badge-item success">Đúng hạn: <strong>{{ statistics?.returnedOnTime }}</strong></span>
+                <span class="badge-item warning">Quá hạn: <strong>{{ statistics?.returnedLate }}</strong></span>
+                <span class="badge-item danger">Chưa trả: <strong>{{ statistics?.notReturned }}</strong></span>
+            </div>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h5><i class="bi bi-trophy-fill text-warning"></i> Sách mượn nhiều nhất</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Tên sách</th>
+                <th class="text-end pe-4">Lượt</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let book of statistics?.topBooks">
+                <td class="ps-4 text-truncate" style="max-width: 200px;" title="{{ book[0] }}">{{ book[0] }}</td>
+                <td class="text-end pe-4"><span class="badge bg-primary rounded-pill">{{ book[1] }}</span></td>
+              </tr>
+              <tr *ngIf="!statistics?.topBooks?.length">
+                  <td colspan="2" class="text-center text-muted py-3 small">Chưa có dữ liệu</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-6">
+      
+      <div class="content-card mb-4">
+        <div class="card-header-custom">
+          <h5><i class="bi bi-calendar-check text-info"></i> Thống kê tháng</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <select class="form-select form-select-sm" [(ngModel)]="selectedMonth" (change)="onMonthYearChange()">
+                    <option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="month">Tháng {{ month }}</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <select class="form-select form-select-sm" [(ngModel)]="selectedYear" (change)="onYearChange(); onMonthYearChange()">
+                    <option *ngFor="let year of [2023, 2024, 2025]" [value]="year">{{ year }}</option>
+                  </select>
+                </div>
+            </div>
+            
+            <div class="alert alert-light border text-center p-3 mb-0">
+                <div *ngIf="monthlyStatistics; else noData">
+                    <h6 class="text-uppercase text-muted small mb-1">Dữ liệu tháng {{selectedMonth}}</h6>
+                    <span class="text-primary fw-bold fs-5">{{ monthlyStatistics }}</span>
+                </div>
+                <ng-template #noData>
+                    <span class="text-muted small">Không có dữ liệu</span>
+                </ng-template>
+            </div>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h5><i class="bi bi-person-lines-fill text-success"></i> Độc giả tích cực</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-4">Tên độc giả</th>
+                    <th class="text-end pe-4">Số sách</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let user of statistics?.topUsers">
+                    <td class="ps-4 fw-medium">{{ user[0] }}</td>
+                    <td class="text-end pe-4"><span class="badge bg-warning text-dark rounded-pill">{{ user[1] }}</span></td>
+                  </tr>
+                  <tr *ngIf="!statistics?.topUsers?.length">
+                    <td colspan="2" class="text-center text-muted py-3 small">Chưa có dữ liệu</td>
+                </tr>
+                </tbody>
+              </table>
+        </div>
+      </div>
+
+    </div>
   </div>
-  
+</div>

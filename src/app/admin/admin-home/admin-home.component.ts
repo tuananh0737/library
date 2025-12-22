@@ -1,21 +1,22 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Chart } from 'chart.js';
+import { Chart, registerables } from 'chart.js';
+
+// QUAN TRỌNG: Đăng ký modules cho Chart.js để tránh lỗi
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-admin-home',
   templateUrl: './admin-home.component.html',
   styleUrls: ['./admin-home.component.css']
 })
-export class AdminHomeComponent implements OnInit {
+export class AdminHomeComponent implements OnInit, AfterViewInit {
   statistics: any; // Thống kê tổng quan
-  monthlyStatistics: string = ''; // Thống kê theo tháng (chuỗi trả về từ API)
-  selectedMonth: number = new Date().getMonth() + 1; // Mặc định tháng hiện tại
-  selectedYear: number = new Date().getFullYear(); // Mặc định năm hiện tại
-  borrowStatusChart: any = null; // Biểu đồ tròn
-  allMonthlyStatistics: { [month: number]: string } = {}; // Lưu dữ liệu của từng tháng
-
-
+  monthlyStatistics: string = ''; 
+  selectedMonth: number = new Date().getMonth() + 1; 
+  selectedYear: number = new Date().getFullYear(); 
+  borrowStatusChart: any = null; 
+  allMonthlyStatistics: { [month: number]: string } = {}; 
 
   constructor(private http: HttpClient) {}
 
@@ -23,18 +24,19 @@ export class AdminHomeComponent implements OnInit {
     this.loadStatistics();
     this.loadMonthlyStatistics();
     this.loadAllMonthlyStatistics();
-
   }
-
-
 
   loadMonthlyStatistics(): void {
     this.http
       .get(`/api/admin/statistics-monthly?month=${this.selectedMonth}&year=${this.selectedYear}`, { responseType: 'text' })
-      .subscribe((data: string) => {
-        this.monthlyStatistics = data;
-      }, error => {
-        console.error('Error fetching monthly statistics:', error);
+      .subscribe({
+        next: (data: string) => {
+          this.monthlyStatistics = data;
+        }, 
+        error: (error) => {
+          console.error('Error fetching monthly statistics:', error);
+          this.monthlyStatistics = ''; // Xóa dữ liệu cũ nếu lỗi
+        }
       });
   }
 
@@ -43,19 +45,19 @@ export class AdminHomeComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    // Đợi DOM sẵn sàng trước khi tạo biểu đồ
-    if (this.statistics) {
-      this.createBorrowStatusChart();
-    }
+    // Logic vẽ chart sẽ được gọi trong loadStatistics khi có data
   }
 
   loadStatistics(): void {
     this.http.get('/api/admin/dashboard-statistics')
-      .subscribe((data: any) => {
-        this.statistics = data;
-        this.createBorrowStatusChart(); // Tạo biểu đồ khi đã có dữ liệu
-      }, error => {
-        console.error('Error fetching statistics:', error);
+      .subscribe({
+        next: (data: any) => {
+          this.statistics = data;
+          this.createBorrowStatusChart(); 
+        }, 
+        error: (error) => {
+          console.error('Error fetching statistics:', error);
+        }
       });
   }
 
@@ -63,16 +65,13 @@ export class AdminHomeComponent implements OnInit {
     const ctx = document.getElementById('borrowStatusChart') as HTMLCanvasElement;
 
     if (!ctx) {
-      console.error('Canvas element not found');
       return;
     }
 
-    // Hủy biểu đồ cũ nếu đã tồn tại
     if (this.borrowStatusChart) {
       this.borrowStatusChart.destroy();
     }
 
-    // Tạo biểu đồ tròn
     this.borrowStatusChart = new Chart(ctx, {
       type: 'pie',
       data: {
@@ -83,15 +82,22 @@ export class AdminHomeComponent implements OnInit {
             this.statistics?.returnedLate || 0,
             this.statistics?.notReturned || 0
           ],
-          backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
-          hoverBackgroundColor: ['#218838', '#e0a800', '#c82333']
+          // Màu sắc hiện đại hơn
+          backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], 
+          hoverBackgroundColor: ['#16a34a', '#d97706', '#dc2626'],
+          borderWidth: 0 // Bỏ viền cho phẳng
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false, // Để canvas co giãn theo thẻ cha
         plugins: {
           legend: {
-            position: 'top',
+            position: 'bottom',
+            labels: {
+                usePointStyle: true,
+                padding: 20
+            }
           }
         }
       }
@@ -102,21 +108,20 @@ export class AdminHomeComponent implements OnInit {
     for (let month = 1; month <= 12; month++) {
       this.http
         .get(`/api/admin/statistics-monthly?month=${month}&year=${this.selectedYear}`, { responseType: 'text' })
-        .subscribe(
-          (data: string) => {
+        .subscribe({
+          next: (data: string) => {
             this.allMonthlyStatistics[month] = data;
           },
-          (error) => {
+          error: (error) => {
             console.error(`Error fetching data for month ${month}:`, error);
             this.allMonthlyStatistics[month] = 'Không có dữ liệu';
           }
-        );
+        });
     }
   }
 
   onYearChange(): void {
-    this.allMonthlyStatistics = {}; // Reset dữ liệu cũ
+    this.allMonthlyStatistics = {}; 
     this.loadAllMonthlyStatistics();
   }
-
 }
