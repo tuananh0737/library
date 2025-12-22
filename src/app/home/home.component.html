@@ -60,7 +60,7 @@
           <span class="tag">{{selectedBook.numberPage}} trang</span>
         </div>
 
-        <button class="btn-primary-action" (click)="borrowBook(selectedBook.id)">Mượn Sách Ngay</button>
+        <!-- <button class="btn-primary-action" (click)="borrowBook(selectedBook.id)">Mượn Sách Ngay</button> -->
       </div>
 
       <div class="book-description">
@@ -84,7 +84,7 @@
 
         <div class="comment-list">
             <div class="comment-item" *ngFor="let c of comments">
-                <div class="comment-avatar">{{c.user.charAt(0)}}</div>
+                <div class="comment-avatar">{{c.user.charAt(0) | uppercase}}</div>
                 <div class="comment-body">
                     <div class="comment-header">
                         <div class="user-info-group">
@@ -97,7 +97,7 @@
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
-                    <span class="comment-date">{{c.date | date:'shortDate'}}</span>
+                    <span class="comment-date">{{c.date | date:'dd/MM/yyyy HH:mm'}}</span>
                     <p class="comment-content">{{c.content}}</p>
                 </div>
             </div>

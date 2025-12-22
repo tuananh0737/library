@@ -132,7 +132,8 @@ export class BookListComponent implements OnInit {
       if (this.isAdmin) {
         this.commentService.deleteCommentByAdmin(comment.id).subscribe({
           next: () => {
-            this.comments = this.comments.filter(c => c !== comment);
+            // CẬP NHẬT GIAO DIỆN: Lọc bỏ comment có id vừa xóa
+            this.comments = this.comments.filter(c => c.id !== comment.id);
             alert('Đã xóa bình luận (Admin).');
           },
           error: (err) => {
@@ -151,7 +152,8 @@ export class BookListComponent implements OnInit {
   retryDeleteAsUser(comment: any): void {
     this.commentService.deleteComment(comment.id).subscribe({
       next: () => {
-        this.comments = this.comments.filter(c => c !== comment);
+        // CẬP NHẬT GIAO DIỆN: Lọc bỏ comment có id vừa xóa
+        this.comments = this.comments.filter(c => c.id !== comment.id);
         alert('Đã xóa bình luận.');
       },
       error: (err) => alert('Không thể xóa: ' + (err.error?.message || 'Lỗi server'))
