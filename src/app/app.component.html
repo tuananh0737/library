@@ -99,12 +99,6 @@
              <a routerLink="/librarian/deCodeQR" routerLinkActive="active" class="nav-item">
                 <i class="bi bi-qr-code"></i> <span>Quét mã QR</span>
              </a>
-             <a class="nav-item notification-link" (click)="toggleNotificationMenu()">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                   <span><i class="bi bi-bell-fill"></i> Thông báo</span>
-                   <span class="badge-count" *ngIf="notifications.length > 0">{{notifications.length}}</span>
-                </div>
-              </a>
           </div>
       </ng-container>
 
