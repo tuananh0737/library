@@ -30,7 +30,9 @@
           <div class="book-card" *ngFor="let book of paginatedBooks" (click)="onSelectBook(book)"
                [class.active-card]="selectedBook?.id === book.id">
             <div class="card-cover">
-              <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" alt="Cover">
+              <img [src]="book.image ? book.image : 'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" 
+                   alt="{{book.name}}"
+                   style="object-fit: cover;">
               
               <button class="btn-fav-card" [class.active]="book.isFavorite" (click)="toggleFavorite($event, book)">
                 <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
@@ -62,11 +64,9 @@
                     <i class="bi bi-chevron-left"></i> Trước
                   </button>
                 </li>
-                
                 <li class="page-item active" aria-current="page">
                   <span class="page-link border-0 bg-primary">{{ currentPage }} / {{ totalPages }}</span>
                 </li>
-                
                 <li class="page-item" [class.disabled]="currentPage === totalPages">
                   <button class="page-link border-0" (click)="goToPage(currentPage + 1)">
                     Sau <i class="bi bi-chevron-right"></i>
@@ -89,7 +89,9 @@
     <div class="panel-content">
       <div class="book-preview-large">
         <div class="large-cover">
-          <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (selectedBook.name.charAt(0) | uppercase)" alt="Cover">
+          <img [src]="selectedBook.image ? selectedBook.image : 'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (selectedBook.name.charAt(0) | uppercase)" 
+               alt="{{selectedBook.name}}"
+               style="object-fit: cover;">
         </div>
         <div class="title-row">
           <h2 class="detail-title">{{selectedBook.name}}</h2>
