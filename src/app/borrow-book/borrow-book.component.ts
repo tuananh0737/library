@@ -36,18 +36,13 @@ export class BorrowBookComponent implements OnInit {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     this.http.get('/api/user/find-borrowBook-by-user', { headers }).subscribe({
       next: (response: any) => {
-        // [CẬP NHẬT] Sắp xếp dựa trên biến 'returned'
-        // Sách chưa trả (returned = false/null) lên đầu
-        // Sách đã trả (returned = true) xuống dưới
         this.borrowBooks = response.sort((a: any, b: any) => {
-          const isReturnedA = !!a.returned; // Chuyển về boolean
+          const isReturnedA = !!a.returned; 
           const isReturnedB = !!b.returned;
           
           if (isReturnedA === isReturnedB) {
-            // Nếu cùng trạng thái, sắp xếp theo ngày mượn mới nhất
             return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
           }
-          // false (0) lên trước true (1) -> a - b
           return (isReturnedA ? 1 : 0) - (isReturnedB ? 1 : 0);
         });
       },
@@ -69,14 +64,10 @@ export class BorrowBookComponent implements OnInit {
     }, 500);
   }
 
-  // --- [CẬP NHẬT] Helper functions dùng biến returned ---
-
-  // Hiển thị text trạng thái
   getStatusText(returned: boolean): string {
     return returned ? 'Đã trả' : 'Đang mượn';
   }
 
-  // Class CSS tương ứng
   getStatusClass(returned: boolean): string {
     return returned ? 'status-returned' : 'status-borrowing';
   }

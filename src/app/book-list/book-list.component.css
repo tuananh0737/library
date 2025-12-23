@@ -118,12 +118,13 @@
 /* ... Giữ nguyên các class cũ ... */
 
 /* Style cho danh sách comment */
+/* --- Style cho danh sách bình luận --- */
 .comment-item {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9; /* Đường gạch chân mờ giữa các comment */
 }
 
 .comment-avatar {
@@ -136,16 +137,17 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
+  font-size: 1.1rem;
   flex-shrink: 0;
 }
 
 .comment-body {
-  flex: 1;
+  flex: 1; /* Để nội dung comment chiếm hết không gian còn lại */
 }
 
 .comment-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Đẩy tên user sang trái, nút xóa sang phải */
   align-items: flex-start;
   margin-bottom: 4px;
 }
@@ -156,54 +158,59 @@
 }
 
 .comment-user {
-  font-weight: 600;
+  font-weight: 700;
   color: #334155;
   font-size: 0.95rem;
 }
 
 .small-stars {
-  color: #cbd5e1;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  color: #cbd5e1; /* Màu sao chưa chọn */
   margin-top: 2px;
 }
 
 .small-stars .active-star {
-  color: #fbbf24;
+  color: #fbbf24; /* Màu vàng cho sao đã chọn */
 }
 
 .comment-date {
   font-size: 0.75rem;
   color: #94a3b8;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .comment-content {
   color: #475569;
   font-size: 0.95rem;
   line-height: 1.5;
+  word-wrap: break-word; /* Xuống dòng nếu comment quá dài */
 }
 
-/* --- Style cho nút Xóa bình luận --- */
+/* --- [CODE MỚI] Style cho nút Xóa --- */
 .btn-delete-cmt {
-  background: none;
+  background: transparent;
   border: none;
   color: #ef4444; /* Màu đỏ */
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 4px;
-  transition: all 0.2s;
-  opacity: 0.7;
+  transition: all 0.2s ease;
+  opacity: 0.6; /* Mờ đi một chút khi bình thường */
 }
 
 .btn-delete-cmt:hover {
-  opacity: 1;
+  opacity: 1; /* Hiện rõ khi di chuột vào */
   background-color: #fee2e2; /* Nền đỏ nhạt khi hover */
+}
+
+.btn-delete-cmt i {
+  font-size: 1rem;
 }
 
 .no-comments {
   text-align: center;
   color: #94a3b8;
   font-style: italic;
-  padding: 20px;
+  padding: 30px 0;
 }
