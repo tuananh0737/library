@@ -27,7 +27,7 @@
 
       <div class="results-area">
         <div class="book-grid">
-          <div class="book-card" *ngFor="let book of filteredBooks" (click)="onSelectBook(book)"
+          <div class="book-card" *ngFor="let book of paginatedBooks" (click)="onSelectBook(book)"
                [class.active-card]="selectedBook?.id === book.id">
             <div class="card-cover">
               <img [src]="'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" alt="Cover">
@@ -53,6 +53,29 @@
            <div class="empty-icon"><i class="bi bi-search"></i></div>
            <h3>Không tìm thấy kết quả</h3>
         </div>
+
+        <div class="pagination-container d-flex justify-content-center mt-5 mb-5" *ngIf="totalPages > 1">
+            <nav>
+              <ul class="pagination shadow-sm">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link border-0" (click)="goToPage(currentPage - 1)">
+                    <i class="bi bi-chevron-left"></i> Trước
+                  </button>
+                </li>
+                
+                <li class="page-item active" aria-current="page">
+                  <span class="page-link border-0 bg-primary">{{ currentPage }} / {{ totalPages }}</span>
+                </li>
+                
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link border-0" (click)="goToPage(currentPage + 1)">
+                    Sau <i class="bi bi-chevron-right"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+        </div>
+
       </div>
     </div>
   </div>
@@ -75,7 +98,6 @@
           </button>
         </div>
         <p class="detail-author">bởi <span>{{selectedBook.author?.fullname}}</span></p>
-        <!-- <button class="btn-borrow-action" (click)="onBorrow(selectedBook.id)">Mượn Sách Ngay</button> -->
       </div>
 
       <div class="detail-section">
@@ -100,7 +122,6 @@
         <div class="comment-list">
           <div class="comment-item" *ngFor="let c of comments">
             <div class="comment-avatar">{{c.user.charAt(0) | uppercase}}</div>
-            
             <div class="comment-body">
               <div class="comment-header">
                 <div class="user-info-group">
@@ -109,17 +130,14 @@
                     <i *ngFor="let s of [1,2,3,4,5]" class="bi bi-star-fill" [class.active-star]="s <= c.rating"></i>
                   </div>
                 </div>
-                
-                <button class="btn-delete-cmt" (click)="deleteComment(c)" title="Xóa bình luận của bạn">
+                <button class="btn-delete-cmt" *ngIf="c.isCurrentUser" (click)="deleteComment(c)" title="Xóa">
                   <i class="bi bi-trash"></i>
                 </button>
                 </div>
-              
               <span class="comment-date">{{c.date | date:'dd/MM/yyyy HH:mm'}}</span>
               <p class="comment-content">{{c.content}}</p>
             </div>
           </div>
-          
           <div *ngIf="comments.length === 0" class="no-comments">
             Chưa có đánh giá nào. Hãy là người đầu tiên!
           </div>

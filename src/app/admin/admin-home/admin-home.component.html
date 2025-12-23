@@ -68,7 +68,7 @@
 
       <div class="content-card">
         <div class="card-header-custom">
-          <h5><i class="bi bi-trophy-fill text-warning"></i> Sách mượn nhiều nhất</h5>
+          <h5><i class="bi bi-trophy-fill text-warning"></i> Top 5 Sách mượn nhiều nhất</h5>
         </div>
         <div class="card-body p-0">
           <table class="table table-hover mb-0">
@@ -79,9 +79,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let book of statistics?.topBooks">
-                <td class="ps-4 text-truncate" style="max-width: 200px;" title="{{ book[0] }}">{{ book[0] }}</td>
-                <td class="text-end pe-4"><span class="badge bg-primary rounded-pill">{{ book[1] }}</span></td>
+              <tr *ngFor="let book of statistics?.topBooks | slice:0:5">
+                <td class="ps-4 text-truncate" style="max-width: 200px;" title="{{ $any(book)[0] }}">{{ $any(book)[0] }}</td>
+                <td class="text-end pe-4"><span class="badge bg-primary rounded-pill">{{ $any(book)[1] }}</span></td>
               </tr>
               <tr *ngIf="!statistics?.topBooks?.length">
                   <td colspan="2" class="text-center text-muted py-3 small">Chưa có dữ liệu</td>
@@ -127,7 +127,7 @@
 
       <div class="content-card">
         <div class="card-header-custom">
-          <h5><i class="bi bi-person-lines-fill text-success"></i> Độc giả tích cực</h5>
+          <h5><i class="bi bi-person-lines-fill text-success"></i> Top 5 Độc giả tích cực</h5>
         </div>
         <div class="card-body p-0">
             <table class="table table-hover mb-0">
@@ -138,9 +138,9 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let user of statistics?.topUsers">
-                    <td class="ps-4 fw-medium">{{ user[0] }}</td>
-                    <td class="text-end pe-4"><span class="badge bg-warning text-dark rounded-pill">{{ user[1] }}</span></td>
+                  <tr *ngFor="let user of statistics?.topUsers | slice:0:5">
+                     <td class="ps-4 fw-medium">{{ $any(user)[0] }}</td>
+                    <td class="text-end pe-4"><span class="badge bg-warning text-dark rounded-pill">{{ $any(user)[1] }}</span></td>
                   </tr>
                   <tr *ngIf="!statistics?.topUsers?.length">
                     <td colspan="2" class="text-center text-muted py-3 small">Chưa có dữ liệu</td>
