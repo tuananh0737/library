@@ -6,19 +6,25 @@
           <h1>Thư viện</h1>
           <p>Tìm kiếm và khám phá kho sách khổng lồ</p>
         </div>
+        
         <div class="filter-toolbar">
-          <div class="search-input-group">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Tên sách..." [(ngModel)]="searchName" (input)="onSearch()">
+          <div class="search-combo-group" style="display: flex; gap: 10px; flex: 1; align-items: center;">
+            <select [(ngModel)]="searchType" (change)="onSearch()" class="form-select" style="max-width: 150px; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+              <option value="name">Tên sách</option>
+              <option value="author">Tác giả</option>
+              <option value="genre">Thể loại</option>
+            </select>
+        
+            <div class="search-input-wrapper" style="position: relative; flex: 1;">
+              <i class="bi bi-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #888;"></i>
+              <input type="text" 
+                     [placeholder]="getPlaceholder()" 
+                     [(ngModel)]="searchText" 
+                     (input)="onSearch()"
+                     style="width: 100%; padding: 8px 10px 8px 35px; border-radius: 6px; border: 1px solid #ddd;">
+            </div>
           </div>
-          <div class="search-input-group">
-            <i class="bi bi-person"></i>
-            <input type="text" placeholder="Tác giả..." [(ngModel)]="searchAuthor" (input)="onSearch()">
-          </div>
-          <div class="search-input-group">
-            <i class="bi bi-tags"></i>
-            <input type="text" placeholder="Thể loại..." [(ngModel)]="searchGenre" (input)="onSearch()">
-          </div>
+
           <button class="btn-reset" (click)="resetSearch()" title="Xóa bộ lọc">
             <i class="bi bi-arrow-counterclockwise"></i>
           </button>

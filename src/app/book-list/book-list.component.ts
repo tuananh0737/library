@@ -16,10 +16,9 @@ export class BookListComponent implements OnInit {
   selectedBook: any = null;
   myBookmarks: any[] = [];
 
-  // --- Biến Tìm kiếm ---
-  searchName: string = '';
-  searchAuthor: string = '';
-  searchGenre: string = '';
+  // --- Biến Tìm kiếm (Đã gộp) ---
+  searchText: string = '';
+  searchType: string = 'name'; // Mặc định tìm theo tên
 
   // --- Biến Phân trang ---
   currentPage: number = 1;
@@ -85,7 +84,7 @@ export class BookListComponent implements OnInit {
     }
   }
 
-  // --- CÁC HÀM CŨ (Giữ nguyên logic + thêm gọi updatePaginatedBooks) ---
+  // --- CÁC HÀM XỬ LÝ DỮ LIỆU ---
 
   decodeToken(): void {
     const token = localStorage.getItem('authToken');
@@ -208,11 +207,6 @@ export class BookListComponent implements OnInit {
           book.isFavorite = isBookmarked;
         });
         
-        // Cập nhật lại list filteredBooks để đồng bộ icon trái tim
-        // Lưu ý: dòng này có thể reset filter nếu bạn không cẩn thận.
-        // Ở đây mình chỉ map lại thuộc tính isFavorite trên this.books và this.filteredBooks
-        // filteredBooks đang tham chiếu các object trong books nên nó tự cập nhật
-        
         if (this.selectedBook) {
           const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
           if (updatedBook) this.selectedBook.isFavorite = updatedBook.isFavorite;
@@ -287,31 +281,47 @@ export class BookListComponent implements OnInit {
     this.router.navigate(['/borrow'], { queryParams: { bookId: bookId } });
   }
 
+  // --- LOGIC TÌM KIẾM MỚI ---
   onSearch(): void {
     this.selectedBook = null;
     this.currentPage = 1; // Reset về trang 1
 
-    const name = this.searchName.toLowerCase().trim();
-    const author = this.searchAuthor.toLowerCase().trim();
-    const genre = this.searchGenre.toLowerCase().trim();
+    const query = this.searchText.toLowerCase().trim();
 
     this.filteredBooks = this.books.filter(book => {
-      const matchName = book.name.toLowerCase().includes(name);
-      const matchAuthor = book.author?.fullname?.toLowerCase().includes(author) ?? false;
-      const matchGenre = book.genres?.name?.toLowerCase().includes(genre) ?? false;
-      return matchName && matchAuthor && matchGenre;
+      // Nếu không nhập gì thì hiện tất cả
+      if (!query) return true;
+
+      switch (this.searchType) {
+        case 'name':
+          return book.name.toLowerCase().includes(query);
+        case 'author':
+          return book.author?.fullname?.toLowerCase().includes(query) ?? false;
+        case 'genre':
+          return book.genres?.name?.toLowerCase().includes(query) ?? false;
+        default:
+          return true;
+      }
     });
 
     this.updatePaginatedBooks(); // Cập nhật danh sách hiển thị
   }
 
   resetSearch(): void {
-    this.searchName = '';
-    this.searchAuthor = '';
-    this.searchGenre = '';
+    this.searchText = '';
+    this.searchType = 'name'; // Reset về mặc định
     this.filteredBooks = [...this.books];
     this.selectedBook = null;
     this.currentPage = 1;
     this.updatePaginatedBooks();
+  }
+
+  getPlaceholder(): string {
+    switch (this.searchType) {
+      case 'name': return 'Nhập tên sách...';
+      case 'author': return 'Nhập tên tác giả...';
+      case 'genre': return 'Nhập thể loại...';
+      default: return 'Tìm kiếm...';
+    }
   }
 }
