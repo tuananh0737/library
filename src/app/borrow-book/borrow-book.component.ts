@@ -1,5 +1,5 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -11,45 +11,73 @@ export class BorrowBookComponent implements OnInit {
   borrowBooks: any[] = [];
   errorMessage: string = '';
 
-  constructor(private http: HttpClient, private route: ActivatedRoute ) {}
+  constructor(private http: HttpClient, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     const token = localStorage.getItem('authToken');
     if (token) {
       this.fetchBorrowBooks(token);
-  
-      this.route.queryParams.subscribe(params => {
-        const bookId = params['bookId'];
-        if (bookId) {
-          this.scrollToBook(bookId);
-        }
-      });
+      this.handleQueryParams();
     } else {
-      this.errorMessage = 'Đăng nhập để tiếp tục.';
+      this.errorMessage = 'Vui lòng đăng nhập để xem danh sách.';
     }
   }
-  
-  scrollToBook(bookId: number): void {
-    setTimeout(() => {
-      const bookElement = document.getElementById(`book-${bookId}`);
-      if (bookElement) {
-        bookElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        bookElement.classList.add('highlight'); 
+
+  handleQueryParams(): void {
+    this.route.queryParams.subscribe(params => {
+      const bookId = params['bookId'];
+      if (bookId) {
+        this.scrollToBook(bookId);
       }
-    }, 500); 
+    });
   }
 
   fetchBorrowBooks(token: string): void {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get('/api/user/find-borrowBook-by-user', { headers}).subscribe({
-      next: (Response: any) => {
-        this.borrowBooks = Response;
+    this.http.get('/api/user/find-borrowBook-by-user', { headers }).subscribe({
+      next: (response: any) => {
+        // [CẬP NHẬT] Sắp xếp dựa trên biến 'returned'
+        // Sách chưa trả (returned = false/null) lên đầu
+        // Sách đã trả (returned = true) xuống dưới
+        this.borrowBooks = response.sort((a: any, b: any) => {
+          const isReturnedA = !!a.returned; // Chuyển về boolean
+          const isReturnedB = !!b.returned;
+          
+          if (isReturnedA === isReturnedB) {
+            // Nếu cùng trạng thái, sắp xếp theo ngày mượn mới nhất
+            return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+          }
+          // false (0) lên trước true (1) -> a - b
+          return (isReturnedA ? 1 : 0) - (isReturnedB ? 1 : 0);
+        });
       },
       error: (error) => {
-        this.errorMessage = error.error?.errorMessage || 'Lỗi khi tải danh sách';
-        console.error('Error: ', error);
-      },
-    })
+        this.errorMessage = error.error?.errorMessage || 'Không thể tải dữ liệu.';
+        console.error('Error fetching borrow books:', error);
+      }
+    });
   }
 
+  scrollToBook(bookId: number): void {
+    setTimeout(() => {
+      const bookElement = document.getElementById(`book-${bookId}`);
+      if (bookElement) {
+        bookElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        bookElement.classList.add('highlight');
+        setTimeout(() => bookElement.classList.remove('highlight'), 2000);
+      }
+    }, 500);
+  }
+
+  // --- [CẬP NHẬT] Helper functions dùng biến returned ---
+
+  // Hiển thị text trạng thái
+  getStatusText(returned: boolean): string {
+    return returned ? 'Đã trả' : 'Đang mượn';
+  }
+
+  // Class CSS tương ứng
+  getStatusClass(returned: boolean): string {
+    return returned ? 'status-returned' : 'status-borrowing';
+  }
 }

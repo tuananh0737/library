@@ -1,39 +1,119 @@
-.borrowBook-container .card-header {
-  background-color: #007bff; /* Màu xanh Bootstrap */
-  color: white;
+/* --- src/app/borrow-book/borrow-book.component.css --- */
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-.borrowBook-container .list-group-item {
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  padding: 15px;
+.section-header {
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.borrowBook-container .list-group-item h5 {
-  color: #333;
-  font-weight: bold;
+.section-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
 }
 
-.borrowBook-container .list-group-item p {
+.book-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.book-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  border-color: #3b82f6;
+}
+
+/* Style cho sách đã trả */
+.book-item.is-returned {
+  background-color: #f8fafc;
+  border-color: #f1f5f9;
+}
+.book-item.is-returned .book-info h3 { color: #64748b; }
+
+.book-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.meta-row {
+  display: flex;
+  gap: 16px;
   font-size: 14px;
-  color: #555;
+  color: #64748b;
+  flex-wrap: wrap;
 }
 
-.borrowBook-container .alert {
-  margin-bottom: 15px;
+.meta-row span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.card-header {
-  background-color: #2fb746 !important;
+/* Cột thông tin trạng thái bên phải */
+.actions-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 140px;
 }
+
+/* Badge Trạng thái */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Màu trạng thái */
+.status-borrowing {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
+
+.status-returned {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+
+.status-overdue {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
+}
+
+.date-text {
+  font-size: 13px;
+  color: #64748b;
+}
+.date-text .label { font-weight: 500; }
 
 .highlight {
-  border: 2px solid #ffc107;
-  background-color: #fff8e1;
-  transition: background-color 0.5s ease;
-}
-
-.highlight:hover {
-  background-color: #ffeb3b;
+  border: 2px solid #f59e0b !important;
+  background-color: #fffbeb !important;
 }

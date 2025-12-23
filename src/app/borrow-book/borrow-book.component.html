@@ -1,25 +1,46 @@
-<div class="container my-4 borrowBook-container">
-    <div class="card">
-      <div class="card-header bg-primary text-white text-center">
-        <h2>Danh sách đã mượn</h2>
-      </div>
-      <div class="card-body">
-        <div *ngIf="errorMessage" class="alert alert-danger text-center">
-          {{ errorMessage }}
+<div class="page-container">
+  <div class="section-header">
+    <h2><i class="bi bi-journal-check text-primary me-2"></i>Lịch sử mượn sách</h2>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+  </div>
+
+  <div class="book-list" *ngIf="borrowBooks && borrowBooks.length > 0">
+    <div *ngFor="let item of borrowBooks" [id]="'book-' + item.book.id" 
+         class="book-item" 
+         [class.is-returned]="item.returned"> 
+      
+      <div class="book-info">
+        <h3>{{ item.book.name }}</h3>
+        <div class="meta-row">
+          <span><i class="bi bi-person-fill"></i> {{ item.book.author.fullname }}</span>
+          <span><i class="bi bi-tag-fill"></i> {{ item.book.genres.name.trim() }}</span>
+          <span><i class="bi bi-calendar-event"></i> {{ item.book.publishYear }}</span>
         </div>
-  
-        <div *ngIf="borrowBooks && borrowBooks.length > 0" class="list-group">
-          <div *ngFor="let borrowBook of borrowBooks" [id]="'book-' + borrowBook.book.id" class="list-group-item">
-            <h3 class="mb-2">{{ borrowBook.book.name }}</h3>
-            <p class="mb-1"><strong>Tác giả:</strong> {{ borrowBook.book.author.fullname }}</p>
-            <p class="mb-1"><strong>Thể loại:</strong> {{ borrowBook.book.genres.name.trim() }}</p>
-            <p class="mb-1"><strong>Năm xuất bản:</strong> {{ borrowBook.book.publishYear }}</p>
-            <p class="mb-1"><strong>Thời gian mượn:</strong> {{ borrowBook.createdDate }}</p>
-          </div>          
-        </div>
-  
-        <p *ngIf="borrowBooks && borrowBooks.length === 0" class="text-center mt-3">Danh sách mượn trống.</p>
       </div>
+      
+      <div class="actions-col">
+        <div class="status-badge" [ngClass]="getStatusClass(item.returned)">
+          <i class="bi" [ngClass]="item.returned ? 'bi-check-circle-fill' : 'bi-clock-history'"></i>
+          {{ getStatusText(item.returned) }}
+        </div>
+
+        <div class="date-text">
+          <span class="label">Ngày mượn:</span> {{ item.createdDate | date:'dd/MM/yyyy' }}
+        </div>
+        
+        <div class="date-text text-muted" *ngIf="item.returned && item.returnDate">
+           <span class="label">Ngày trả:</span> {{ item.returnDate | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+
     </div>
   </div>
-  
+
+  <div *ngIf="borrowBooks && borrowBooks.length === 0" class="text-center py-5 text-muted">
+    <i class="bi bi-book" style="font-size: 48px;"></i>
+    <p class="mt-3">Bạn chưa có lịch sử mượn sách nào.</p>
+  </div>
+</div>
