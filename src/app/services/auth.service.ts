@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs'; // Import BehaviorSubject
+import { Observable, BehaviorSubject } from 'rxjs'; 
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-private apiUrlLogin = 'https://ibrary.onrender.com/api/login';
-private apiUrlRegis = 'https://ibrary.onrender.com/api/regis';  
-private apiUrlBookmark = 'https://ibrary.onrender.com/api/user/find-bookmark-by-user';
+private apiUrlLogin = '${environment.apiUrl}/api/login';
+private apiUrlRegis = '${environment.apiUrl}/api/regis';  
+private apiUrlBookmark = '${environment.apiUrl}/api/user/find-bookmark-by-user';
 
   private userRoleSubject = new BehaviorSubject<string>('');
   userRole$ = this.userRoleSubject.asObservable();
@@ -40,6 +41,6 @@ private apiUrlBookmark = 'https://ibrary.onrender.com/api/user/find-bookmark-by-
   getUserBookmarks(): Observable<any> {
     const token = localStorage.getItem('authToken');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.post(this.apiUrlBookmark, { headers });
+return this.http.post(this.apiUrlBookmark, {}, { headers });
+    }
   }
-}

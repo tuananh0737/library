@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class BookService {
-  private apiUrl = 'https://ibrary.onrender.com/api/public/find-all-book';
+  private apiUrl = '${environment.apiUrl}/api/public/find-all-book';
 
   constructor(private http: HttpClient) { }
 
