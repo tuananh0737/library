@@ -7,9 +7,12 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class AuthService {
-private apiUrlLogin = '${environment.apiUrl}/api/login';
-private apiUrlRegis = '${environment.apiUrl}/api/regis';  
-private apiUrlBookmark = '${environment.apiUrl}/api/user/find-bookmark-by-user';
+private apiUrlLogin = '${environment.apiUrl}/login';
+private apiUrlRegis = '${environment.apiUrl}/regis';  
+private apiUrlBookmark = '${environment.apiUrl}/user/find-bookmark-by-user';
+// private apiUrlLogin = 'http://localhost:8081/api/login';
+// private apiUrlRegis = 'http://localhost:8081/api/regis';  
+// private apiUrlBookmark = 'http://localhost:8081/api/user/find-bookmark-by-user';
 
   private userRoleSubject = new BehaviorSubject<string>('');
   userRole$ = this.userRoleSubject.asObservable();
