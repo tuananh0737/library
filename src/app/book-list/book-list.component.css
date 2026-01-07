@@ -115,16 +115,13 @@
   .comment-content { font-size: 13px; color: #4b5563; margin: 0; line-height: 1.4; }
   .no-comments { font-size: 13px; color: #9ca3af; font-style: italic; text-align: center; margin-top: 10px; }
 
-  /* ... Giữ nguyên các class cũ ... */
-
-  /* Style cho danh sách comment */
-  /* --- Style cho danh sách bình luận --- */
+  
   .comment-item {
     display: flex;
     gap: 12px;
     margin-bottom: 20px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #f1f5f9; /* Đường gạch chân mờ giữa các comment */
+    border-bottom: 1px solid #f1f5f9; 
   }
 
   .comment-avatar {
@@ -147,7 +144,7 @@
 
   .comment-header {
     display: flex;
-    justify-content: space-between; /* Đẩy tên user sang trái, nút xóa sang phải */
+    justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 4px;
   }
@@ -187,7 +184,6 @@
     word-wrap: break-word; /* Xuống dòng nếu comment quá dài */
   }
 
-  /* --- [CODE MỚI] Style cho nút Xóa --- */
   .btn-delete-cmt {
     background: transparent;
     border: none;
