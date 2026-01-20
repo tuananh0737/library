@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit {
   paginatedBooks: any[] = [];
   totalPages: number = 0;
 
-  // --- Đánh giá & Bình luận ---
+  // --- Bình luận ---
   showReviewModal: boolean = false;
   tempRating: number = 0;
   tempHoverRating: number = 0;
@@ -34,7 +34,6 @@ export class HomeComponent implements OnInit {
   
   comments: any[] = [];
   isAdmin: boolean = false;
-  currentUserInfo: any = null;
 
   constructor(
     private bookService: BookService, 
@@ -44,7 +43,7 @@ export class HomeComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.decodeToken();
+    this.checkAdminRole();
     this.bookService.getBooks().subscribe({
       next: (data) => {
         this.books = data.map((b: any) => ({ ...b, isFavorite: false }));
@@ -60,56 +59,35 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // --- LOGIC TOKEN & USER ---
-  decodeToken(): void {
+  // Chỉ cần check role để biết có dùng API admin hay không
+  checkAdminRole(): void {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        this.currentUserInfo = {
-          id: payload.id || payload.userId, // Lấy ID để so sánh quyền xóa
-          username: payload.sub || payload.username || '',
-          email: payload.email || ''
-        };
         const roles = payload.role || payload.roles || payload.authorities || '';
         if (String(roles).toUpperCase().includes('ADMIN')) {
           this.isAdmin = true;
         }
-      } catch (e) {
-        console.error('Lỗi đọc token:', e);
-      }
+      } catch (e) { console.error('Lỗi đọc token:', e); }
     }
   }
 
-  // --- LOGIC BÌNH LUẬN (Đã sửa đổi) ---
   loadBookComments(bookId: number): void {
-    const currentUserId = this.currentUserInfo?.id;
-
     this.commentService.getCommentsByBook(bookId).subscribe({
       next: (data: any[]) => {
         this.comments = data.map(c => {
-          let isOwner = false;
-          
-          // Kiểm tra quyền sở hữu dựa trên ID
-          if (c.user && currentUserId) {
-             // Nếu user là object có id
-             if (c.user.id && c.user.id === currentUserId) isOwner = true;
-             // Dự phòng nếu user chỉ là id (number)
-             else if (typeof c.user === 'number' && c.user === currentUserId) isOwner = true;
-          }
-
-          const hasRealPermission = this.isAdmin || isOwner;
-
           return {
             id: c.id,
-            // Hiển thị tên người dùng an toàn
+            // Hiển thị tên (ưu tiên các trường có thể có trong object user)
             user: c.user ? (c.user.fullname || c.user.username || 'Người dùng') : 'Ẩn danh',
             rating: c.star,
             content: c.content,
             date: c.createdDate ? new Date(c.createdDate) : new Date(),
             
-            isCurrentUser: true,        // Luôn hiện nút xóa
-            canDelete: hasRealPermission // Cờ kiểm tra quyền thực sự
+            // LOGIC QUAN TRỌNG: Luôn cho phép hiển thị nút xóa
+            // Backend sẽ chặn nếu không có quyền
+            isCurrentUser: true 
           };
         });
         this.comments.sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -119,24 +97,26 @@ export class HomeComponent implements OnInit {
   }
 
   deleteComment(comment: any): void {
-    if (!comment.canDelete) {
-        alert('Bạn không có quyền xóa bình luận này!');
-        return;
-    }
-
+    // Không kiểm tra quyền ở đây nữa, để Backend lo
     if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) return;
     
-    // Chọn API xóa phù hợp
-    const deleteObs = this.isAdmin 
+    // Chọn API xóa dựa trên Role hiện tại (Admin dùng API Admin, User dùng API User)
+    const deleteObservable = this.isAdmin 
         ? this.commentService.deleteCommentByAdmin(comment.id)
         : this.commentService.deleteComment(comment.id);
 
-    deleteObs.subscribe({
+    deleteObservable.subscribe({
         next: () => {
+            // Backend trả về 200 OK -> Xóa thành công
             this.comments = this.comments.filter(c => c.id !== comment.id);
             alert('Đã xóa bình luận.');
         },
-        error: (err) => alert('Lỗi xóa bình luận: ' + (err.error?.message || 'Lỗi server'))
+        error: (err) => {
+            // Backend trả về lỗi (403, 500...) -> Báo lỗi cho user
+            console.error(err);
+            const msg = err.error?.message || 'Bạn không có quyền xóa bình luận này!';
+            alert('Xóa thất bại: ' + msg);
+        }
     });
   }
 
@@ -145,24 +125,23 @@ export class HomeComponent implements OnInit {
       alert('Vui lòng chọn số sao!');
       return;
     }
-    const rating = this.tempRating;
-    const content = this.tempComment;
-    this.commentService.addComment(content, rating, this.selectedBook.id)
+    
+    this.commentService.addComment(this.tempComment, this.tempRating, this.selectedBook.id)
       .subscribe({
         next: (response: any) => {
           alert('Cảm ơn bạn đã đánh giá!');
-          // Tải lại comment để đồng bộ ID và thông tin từ server
-          this.loadBookComments(this.selectedBook.id);
           this.closeReviewForm();
+          // Tải lại để hiển thị bình luận mới nhất từ server
+          this.loadBookComments(this.selectedBook.id);
         },
         error: (err) => {
-          console.error(err);
           alert('Lỗi gửi bình luận: ' + (err.error?.message || 'Vui lòng thử lại'));
         }
       });
   }
 
-  // --- LOGIC PHÂN TRANG ---
+  // --- Các hàm tiện ích (Phân trang, Search, Bookmark...) ---
+
   updatePaginatedBooks() {
     this.totalPages = Math.ceil(this.filteredBooks.length / this.itemsPerPage);
     if (this.currentPage > this.totalPages && this.totalPages > 0) this.currentPage = 1;
@@ -181,7 +160,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // --- LOGIC KHÁC ---
   loadUserBookmarks(): void {
     const token = localStorage.getItem('authToken');
     if (!token) return; 
@@ -192,10 +170,8 @@ export class HomeComponent implements OnInit {
         this.books.forEach(book => {
           book.isFavorite = this.myBookmarks.some(bm => bm.book.id === book.id);
         });
-        
         this.filteredBooks = [...this.books]; 
         this.applyFilters();
-        
         if (this.selectedBook) {
           const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
           if (updatedBook) this.selectedBook.isFavorite = updatedBook.isFavorite;
@@ -207,10 +183,8 @@ export class HomeComponent implements OnInit {
   toggleFavorite(event: Event, book: any): void {
     event.stopPropagation();
     const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Bạn cần đăng nhập để thực hiện chức năng này!');
-      return;
-    }
+    if (!token) { alert('Bạn cần đăng nhập!'); return; }
+    
     if (book.isFavorite) {
       const bookmarkEntry = this.myBookmarks.find(bm => bm.book.id === book.id);
       if (bookmarkEntry) {
@@ -274,10 +248,7 @@ export class HomeComponent implements OnInit {
 
   openReviewForm(): void {
     const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Vui lòng đăng nhập để đánh giá!');
-      return;
-    }
+    if (!token) { alert('Vui lòng đăng nhập để đánh giá!'); return; }
     this.showReviewModal = true;
     this.tempRating = 0;
     this.tempComment = '';

@@ -34,7 +34,6 @@ export class BookListComponent implements OnInit {
   
   comments: any[] = [];
   isAdmin: boolean = false;
-  currentUserInfo: any = null; 
 
   constructor(
     private bookService: BookService,
@@ -44,7 +43,7 @@ export class BookListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.decodeToken();
+    this.checkAdminRole();
     this.bookService.getBooks().subscribe({
       next: (data) => {
         this.books = data.map((b: any) => ({ ...b, isFavorite: false }));
@@ -56,43 +55,23 @@ export class BookListComponent implements OnInit {
     });
   }
 
-  // --- LOGIC TOKEN & USER ---
-  decodeToken(): void {
+  checkAdminRole(): void {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        this.currentUserInfo = {
-          id: payload.id || payload.userId, // Quan trọng: Lấy ID
-          username: payload.sub || payload.username || '',
-          email: payload.email || ''
-        };
         const roles = payload.role || payload.roles || payload.authorities || '';
         if (String(roles).toUpperCase().includes('ADMIN')) {
           this.isAdmin = true;
         }
-      } catch (e) {
-        console.error('Lỗi đọc token:', e);
-      }
+      } catch (e) { console.error('Lỗi đọc token:', e); }
     }
   }
 
-  // --- LOGIC BÌNH LUẬN (Đã chuẩn hóa) ---
   loadBookComments(bookId: number): void {
-    const currentUserId = this.currentUserInfo?.id;
-
     this.commentService.getCommentsByBook(bookId).subscribe({
       next: (data: any[]) => {
         this.comments = data.map(c => {
-          let isOwner = false;
-          
-          if (c.user && currentUserId) {
-            if (c.user.id && c.user.id === currentUserId) isOwner = true;
-            else if (typeof c.user === 'number' && c.user === currentUserId) isOwner = true;
-          }
-          
-          const hasRealPermission = this.isAdmin || isOwner;
-          
           return {
             id: c.id,
             user: c.user ? (c.user.fullname || c.user.username || 'Người dùng') : 'Ẩn danh',
@@ -100,8 +79,8 @@ export class BookListComponent implements OnInit {
             content: c.content,
             date: c.createdDate ? new Date(c.createdDate) : new Date(),
             
-            isCurrentUser: true,         // Luôn hiện icon xóa
-            canDelete: hasRealPermission // Check quyền khi click
+            // LUÔN HIỆN NÚT XÓA - Backend quyết định quyền
+            isCurrentUser: true
           };
         });
         this.comments.sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -111,23 +90,23 @@ export class BookListComponent implements OnInit {
   }
 
   deleteComment(comment: any): void {
-    if (!comment.canDelete) {
-        alert('Bạn không có quyền xóa bình luận này!');
-        return;
-    }
-
     if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) return;
     
-    const deleteObs = this.isAdmin 
+    // Gọi thẳng API, nếu lỗi thì bắt ở catch
+    const deleteObservable = this.isAdmin 
         ? this.commentService.deleteCommentByAdmin(comment.id)
         : this.commentService.deleteComment(comment.id);
 
-    deleteObs.subscribe({
+    deleteObservable.subscribe({
       next: () => {
         this.comments = this.comments.filter(c => c.id !== comment.id);
         alert('Đã xóa bình luận.');
       },
-      error: (err) => alert('Không thể xóa: ' + (err.error?.message || 'Lỗi server'))
+      error: (err) => {
+        console.error(err);
+        const msg = err.error?.message || 'Bạn không có quyền xóa bình luận này!';
+        alert('Xóa thất bại: ' + msg);
+      }
     });
   }
 
@@ -136,23 +115,22 @@ export class BookListComponent implements OnInit {
       alert('Vui lòng chọn số sao đánh giá!');
       return;
     }
-    const rating = this.tempRating;
-    const content = this.tempComment;
-    this.commentService.addComment(content, rating, this.selectedBook.id)
+    
+    this.commentService.addComment(this.tempComment, this.tempRating, this.selectedBook.id)
       .subscribe({
         next: (response: any) => {
           alert('Gửi đánh giá thành công!');
-          this.loadBookComments(this.selectedBook.id);
           this.closeReviewForm();
+          this.loadBookComments(this.selectedBook.id);
         },
         error: (err) => {
-          console.error(err);
           alert('Lỗi gửi bình luận: ' + (err.error?.message || 'Vui lòng thử lại'));
         }
       });
   }
 
-  // --- LOGIC PHÂN TRANG & TÌM KIẾM ---
+  // --- Helper Functions ---
+
   updatePaginatedBooks() {
     this.totalPages = Math.ceil(this.filteredBooks.length / this.itemsPerPage);
     if (this.currentPage > this.totalPages && this.totalPages > 0) this.currentPage = 1;
@@ -208,7 +186,6 @@ export class BookListComponent implements OnInit {
     }
   }
 
-  // --- LOGIC KHÁC ---
   loadUserBookmarks(): void {
     const token = localStorage.getItem('authToken');
     if (!token) return;
@@ -242,14 +219,12 @@ export class BookListComponent implements OnInit {
   toggleFavorite(event: Event, book: any): void {
     event.stopPropagation();
     const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Bạn cần đăng nhập để thực hiện chức năng này!');
-      return;
-    }
+    if (!token) { alert('Bạn cần đăng nhập!'); return; }
+    
     if (book.isFavorite) {
-      const bookmarkEntry = this.myBookmarks.find(bm => bm.book.id === book.id);
-      if (bookmarkEntry) {
-        this.bookmarkService.deleteBookmark(bookmarkEntry.id).subscribe({
+      const bm = this.myBookmarks.find(b => b.book.id === book.id);
+      if (bm) {
+        this.bookmarkService.deleteBookmark(bm.id).subscribe({
           next: () => {
             book.isFavorite = false;
             this.loadUserBookmarks(); 
@@ -270,10 +245,7 @@ export class BookListComponent implements OnInit {
 
   openReviewForm(): void {
     const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Vui lòng đăng nhập để bình luận!');
-      return;
-    }
+    if (!token) { alert('Vui lòng đăng nhập!'); return; }
     this.showReviewModal = true;
     this.tempRating = 0; 
     this.tempComment = '';
