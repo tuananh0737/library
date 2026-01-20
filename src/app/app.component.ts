@@ -137,7 +137,7 @@ export class AppComponent implements OnInit {
       newPassword: this.newPassword,
     };
   
-    this.http.post('/api/user/change-password', body, { headers, responseType: 'text' }).subscribe({
+    this.http.post(`${environment.apiUrl}/user/change-password`, body, { headers, responseType: 'text' }).subscribe({
       next: (response: string) => {
         this.successMessage = 'Đổi mật khẩu thành công!';
         setTimeout(() => {

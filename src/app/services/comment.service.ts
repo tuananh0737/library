@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommentService {
-  private apiUrlUserComments = '/api/user/comments'; 
-  private apiUrlAdd = '/api/user/add-comment';
-  private apiUrlDelete = '/api/user/delete-comment';
-  
-  private apiUrlAdminDelete = '/api/admin/delete-comment'; 
-  
-  private apiUrlGetByBook = '/api/public/find-comment-book'; 
+  private apiUrlUserComments = `${environment.apiUrl}/user/comments`; 
+  private apiUrlAdd = `${environment.apiUrl}/user/add-comment`;
+  private apiUrlDelete = `${environment.apiUrl}/user/delete-comment`;
+  private apiUrlAdminDelete = `${environment.apiUrl}/admin/delete-comment`; 
+  private apiUrlGetByBook = `${environment.apiUrl}/public/find-comment-book`;
 
   constructor(private http: HttpClient) {}
 
