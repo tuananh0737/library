@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from './services/auth.service'; 
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -45,7 +46,7 @@ export class AppComponent implements OnInit {
 
   fetchUserRole(token: string): void {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.post('/api/userlogged', {}, { headers }).subscribe({
+    this.http.post(`${environment.apiUrl}/userlogged`, {}, { headers }).subscribe({
       next: (response: any) => {
         const role = response?.role || '';
         this.authService.setUserRole(role);
@@ -58,7 +59,7 @@ export class AppComponent implements OnInit {
 
   fetchNotifications(token: string): void {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get<any[]>('/api/user/notifications', { headers }).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/user/notifications`, { headers }).subscribe({
       next: (data) => {
         this.notifications = data;
       },

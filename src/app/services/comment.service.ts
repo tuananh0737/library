@@ -10,7 +10,6 @@ export class CommentService {
   private apiUrlAdd = '/api/user/add-comment';
   private apiUrlDelete = '/api/user/delete-comment';
   
-  // Endpoint Admin mới
   private apiUrlAdminDelete = '/api/admin/delete-comment'; 
   
   private apiUrlGetByBook = '/api/public/find-comment-book'; 
@@ -38,12 +37,10 @@ export class CommentService {
     return this.http.post(this.apiUrlAdd, body, { headers: this.getHeaders() });
   }
 
-  // Xóa comment của chính mình (User thường)
   deleteComment(commentId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrlDelete}?id=${commentId}`, { headers: this.getHeaders() });
   }
 
-  // [MỚI] Xóa comment bất kỳ (Quyền Admin)
   deleteCommentByAdmin(commentId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrlAdminDelete}?id=${commentId}`, { headers: this.getHeaders() });
   }

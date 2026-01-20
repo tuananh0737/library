@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-user-info',
@@ -39,10 +40,6 @@ export class UserInfoComponent implements OnInit {
   }
 
   submitUpdate(): void {
-    // if (this.updateForm.invalid) {
-    //   alert('Vui lòng điền đầy đủ thông tin.');
-    //   return;
-    // }
 
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -51,7 +48,7 @@ export class UserInfoComponent implements OnInit {
     }
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`).set('Content-Type', 'application/json');
-    this.http.post('api/user/update-info', this.updateForm.value, { headers }).subscribe({
+    this.http.post(`${environment.apiUrl}/user/update-info`, this.updateForm.value, { headers }).subscribe({
       next: () => {
         alert('Cập nhật thông tin thành công.');
         this.showUpdate = false;
@@ -67,7 +64,7 @@ export class UserInfoComponent implements OnInit {
 
   fetchUserInfo(token: string): void {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.post('/api/userlogged', {}, { headers }).subscribe({
+    this.http.post(`${environment.apiUrl}/userlogged`, {}, { headers }).subscribe({
       next: (response) => {
         this.userInfo = response;
       },

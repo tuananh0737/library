@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { BookmarkService } from '../services/bookmark.service'; // [Mới] Import Service
+import { BookmarkService } from '../services/bookmark.service'; 
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-mybook',
@@ -12,7 +13,6 @@ export class MybookComponent implements OnInit {
   isDeleteOverlayVisible: boolean = false;
   selectedBookmark: any = null; 
 
-  // [Cập nhật] Inject BookmarkService thay vì HttpClient
   constructor(private bookmarkService: BookmarkService) {}
 
   ngOnInit(): void {
@@ -24,7 +24,6 @@ export class MybookComponent implements OnInit {
     }
   }
 
-  // [Cập nhật] Sử dụng service để lấy danh sách
   fetchBookmarks(): void {
     this.bookmarkService.getBookmarks().subscribe({
       next: (response: any) => {
@@ -47,7 +46,6 @@ export class MybookComponent implements OnInit {
     this.selectedBookmark = null; 
   }
 
-  // [Cập nhật] Sử dụng service để xóa
   deleteBook(bookmarkId: number): void {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -57,7 +55,6 @@ export class MybookComponent implements OnInit {
 
     this.bookmarkService.deleteBookmark(bookmarkId).subscribe({
       next: () => {
-        // Cập nhật lại giao diện sau khi xóa thành công
         this.bookmarks = this.bookmarks.filter(b => b.id !== bookmarkId); 
         this.closeDeleteOverlay(); 
         alert('Đã xóa khỏi danh sách yêu thích.');

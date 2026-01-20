@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
+import { environment } from '../../../environments/environment';
 
 // QUAN TRỌNG: Đăng ký modules cho Chart.js để tránh lỗi
 Chart.register(...registerables);
@@ -11,7 +12,7 @@ Chart.register(...registerables);
   styleUrls: ['./admin-home.component.css']
 })
 export class AdminHomeComponent implements OnInit, AfterViewInit {
-  statistics: any; // Thống kê tổng quan
+  statistics: any; 
   monthlyStatistics: string = ''; 
   selectedMonth: number = new Date().getMonth() + 1; 
   selectedYear: number = new Date().getFullYear(); 
@@ -28,14 +29,14 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
 
   loadMonthlyStatistics(): void {
     this.http
-      .get(`/api/admin/statistics-monthly?month=${this.selectedMonth}&year=${this.selectedYear}`, { responseType: 'text' })
+      .get(`${environment.apiUrl}/admin/statistics-monthly?month=${this.selectedMonth}&year=${this.selectedYear}`, { responseType: 'text' })
       .subscribe({
         next: (data: string) => {
           this.monthlyStatistics = data;
         }, 
         error: (error) => {
           console.error('Error fetching monthly statistics:', error);
-          this.monthlyStatistics = ''; // Xóa dữ liệu cũ nếu lỗi
+          this.monthlyStatistics = ''; 
         }
       });
   }
@@ -45,11 +46,10 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Logic vẽ chart sẽ được gọi trong loadStatistics khi có data
   }
 
   loadStatistics(): void {
-    this.http.get('/api/admin/dashboard-statistics')
+    this.http.get(`${environment.apiUrl}/admin/dashboard-statistics`)
       .subscribe({
         next: (data: any) => {
           this.statistics = data;
@@ -82,15 +82,14 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
             this.statistics?.returnedLate || 0,
             this.statistics?.notReturned || 0
           ],
-          // Màu sắc hiện đại hơn
           backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], 
           hoverBackgroundColor: ['#16a34a', '#d97706', '#dc2626'],
-          borderWidth: 0 // Bỏ viền cho phẳng
+          borderWidth: 0 
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false, // Để canvas co giãn theo thẻ cha
+        maintainAspectRatio: false, 
         plugins: {
           legend: {
             position: 'bottom',
@@ -107,7 +106,7 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
   loadAllMonthlyStatistics(): void {
     for (let month = 1; month <= 12; month++) {
       this.http
-        .get(`/api/admin/statistics-monthly?month=${month}&year=${this.selectedYear}`, { responseType: 'text' })
+        .get(`${environment.apiUrl}/admin/statistics-monthly?month=${month}&year=${this.selectedYear}`, { responseType: 'text' })
         .subscribe({
           next: (data: string) => {
             this.allMonthlyStatistics[month] = data;

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -61,14 +62,12 @@ export class LoginComponent {
 
   fetchUserRoleAndRedirect(token: string) {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.post('/api/userlogged', {}, { headers }).subscribe({
+    this.http.post(`${environment.apiUrl}/userlogged`, {}, { headers }).subscribe({
       next: (response: any) => {
         const role = response?.role;
         
-        // CẬP NHẬT: Set role vào service để AppComponent nhận được tín hiệu
         this.authService.setUserRole(role);
 
-        // ĐIỀU HƯỚNG: Không dùng window.location.reload() nữa
         if (role === 'ROLE_ADMIN') {
           this.router.navigate(['/admin/admin-home']);
         } else if (role === 'ROLE_USER') {

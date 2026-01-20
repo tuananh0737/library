@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-borrow-book',
@@ -34,7 +35,7 @@ export class BorrowBookComponent implements OnInit {
 
   fetchBorrowBooks(token: string): void {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.http.get('/api/user/find-borrowBook-by-user', { headers }).subscribe({
+    this.http.get(`${environment.apiUrl}/user/find-borrowBook-by-user`, { headers }).subscribe({
       next: (response: any) => {
         this.borrowBooks = response.sort((a: any, b: any) => {
           const isReturnedA = !!a.returned; 
