@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { environment } from '../../../environments/environment';
 
-// QUAN TRỌNG: Đăng ký modules cho Chart.js để tránh lỗi
 Chart.register(...registerables);
 
 @Component({

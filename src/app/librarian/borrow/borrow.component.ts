@@ -41,7 +41,7 @@ export class BorrowComponent {
       'Content-Type': 'application/json'
     });
 
-    this.http.post('${environment.apiUrl}/system/search-user', { param: this.searchParam }, { headers })
+    this.http.post(`${environment.apiUrl}/system/search-user`, { param: this.searchParam }, { headers })
       .subscribe(
         (response: any) => {
           this.users = response || [];

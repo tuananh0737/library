@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+
 
 interface Author {
   id: number;
@@ -38,7 +40,7 @@ export class AuthorComponent implements OnInit {
   }
 
   loadAuthors(): void {
-    const url = '/api/public/find-all-author';
+    const url = `${environment.apiUrl}/public/find-all-author`;
     this.http.get<Author[]>(url).subscribe({
       next: (data) => {
         this.authors = data;
@@ -94,7 +96,7 @@ export class AuthorComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = 'api/admin/add-update-author';
+    const url = `${environment.apiUrl}/admin/add-update-author`;
 
     this.http.post<Author>(url, this.currentAuthor, { headers }).subscribe({
       next: (response) => {
@@ -129,7 +131,7 @@ export class AuthorComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/admin/delete-author?id=${authorId}`;
+    const url = `${environment.apiUrl}/admin/delete-author?id=${authorId}`;
 
     this.http.delete(url, { headers }).subscribe({
       next: () => {

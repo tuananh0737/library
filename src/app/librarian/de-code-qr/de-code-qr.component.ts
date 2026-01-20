@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
+
 
 @Component({
   selector: 'app-de-code-qr',
@@ -33,7 +35,7 @@ export class DeCodeQRComponent implements OnInit {
   
 
   fetchBookDetails(qrCode: string): void {
-    const url = `/api/public/find-book-by-qr`;
+    const url = `${environment.apiUrl}/public/find-book-by-qr`;
     this.http.post(url, qrCode, { responseType: 'json' }).subscribe(
       (response) => {
         this.bookDetails$.next(response);

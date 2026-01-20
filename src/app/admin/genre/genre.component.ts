@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { environment } from '../../../environments/environment';
+
 
 interface Genre {
   id: number;
@@ -37,7 +39,7 @@ export class GenreComponent implements OnInit {
   }
 
   loadGenres(): void {
-    const url = '/api/public/find-all-genres';
+    const url = `${environment.apiUrl}/public/find-all-genres`;
     this.http.get<Genre[]>(url).subscribe({
       next: (data) => {
         this.genres = data;
@@ -93,7 +95,7 @@ export class GenreComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = 'api/admin/add-update-genres';
+    const url = `${environment.apiUrl}/admin/add-update-genres`;
 
     this.http.post<Genre>(url, this.currentGenre, { headers }).subscribe({
       next: (response) => {
@@ -127,7 +129,7 @@ export class GenreComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/admin/delete-genres?id=${genreId}`;
+    const url = `${environment.apiUrl}/admin/delete-genres?id=${genreId}`;
 
     this.http.delete(url, { headers }).subscribe({
       next: () => {

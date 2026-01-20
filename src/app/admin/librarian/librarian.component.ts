@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { environment } from '../../../environments/environment';
+
 
 interface User {
   id: number;
@@ -50,7 +52,7 @@ export class LibrarianComponent implements OnInit {
       }
     
       const headers = { Authorization: `Bearer ${token}` };
-      const url = '/api/system/update-user';
+      const url = `${environment.apiUrl}/system/update-user`;
     
       this.http.post<User>(url, this.selectedUser, { headers }).subscribe({
         next: (data) => {
@@ -84,7 +86,7 @@ export class LibrarianComponent implements OnInit {
     searchUser(): void {
       const token = localStorage.getItem('authToken');
       const headers = { Authorization: `Bearer ${token}` };
-      const url = '/api/system/search-user';
+      const url = `${environment.apiUrl}/system/search-user`;
     
       const payload = { param: this.param }; 
     
@@ -116,7 +118,7 @@ export class LibrarianComponent implements OnInit {
     loadUsers(): void {
       const token = localStorage.getItem('authToken');
       const headers = { Authorization: `Bearer ${token}` };
-      const url = '/api/admin/getUserByRole?role=ROLE_LIBRARIAN';
+      const url = `${environment.apiUrl}/admin/getUserByRole?role=ROLE_LIBRARIAN`;
   
       this.http.get<User[]>(url, { headers }).subscribe({
         next: (data) => {
@@ -130,14 +132,12 @@ export class LibrarianComponent implements OnInit {
       });
     }
   
-    // Cập nhật danh sách người dùng hiển thị theo trang
     updatePagination(): void {
       const startIndex = (this.currentPage - 1) * this.pageSize;
       const endIndex = startIndex + this.pageSize;
       this.paginatedUsers = this.users.slice(startIndex, endIndex); 
     }
   
-    // Thay đổi trang
     goToPage(page: number): void {
       if (page < 1 || page > this.totalPages) return; 
       this.currentPage = page;
