@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BookService } from '../services/book.service';
 import { HttpClient } from '@angular/common/http';
 import { Router,ActivatedRoute  } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 interface Book {
   id: number;
@@ -103,7 +104,7 @@ export class BookLibrarianComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/system/search-user`;
+    const url = `${environment.apiUrl}/system/search-user`;
 
     this.http
       .post<{ id: number; fullname: string; idCard: string; phone: string }[]>(
@@ -141,7 +142,7 @@ export class BookLibrarianComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/system/add-borrowBook`;
+    const url = `${environment.apiUrl}/system/add-borrowBook`;
 
     const borrowData = {
       user: { id: this.selectedUserId },

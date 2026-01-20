@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-borrow',
@@ -40,7 +41,7 @@ export class BorrowComponent {
       'Content-Type': 'application/json'
     });
 
-    this.http.post('/api/system/search-user', { param: this.searchParam }, { headers })
+    this.http.post('${environment.apiUrl}/system/search-user', { param: this.searchParam }, { headers })
       .subscribe(
         (response: any) => {
           this.users = response || [];
@@ -66,7 +67,7 @@ export class BorrowComponent {
       Authorization: `Bearer ${token}`
     });
 
-    this.http.get(`/api/system/find-borrowBook?userId=${this.selectedUserId}`, { headers })
+    this.http.get(`${environment.apiUrl}/system/find-borrowBook?userId=${this.selectedUserId}`, { headers })
       .subscribe(
         (response: any) => {
           this.borrowBooks = response || [];
@@ -98,7 +99,7 @@ export class BorrowComponent {
         'Content-Type': 'application/json'
       });
 
-      this.http.post(`/api/system/return-book?borrowBookId=${this.bookIdToReturn}`, {}, { headers, responseType: 'text' })
+      this.http.post(`${environment.apiUrl}/system/return-book?borrowBookId=${this.bookIdToReturn}`, {}, { headers, responseType: 'text' })
         .subscribe(
           () => {
             this.isSuccessMessageVisible = true;

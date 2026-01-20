@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BookService } from '../services/book.service';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 interface Book {
   id: number;
@@ -100,7 +101,7 @@ export class BookComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/system/search-user`;
+    const url = `${environment.apiUrl}/system/search-user`;
 
     this.http
       .post<{ id: number; fullname: string; idCard: string; phone: string }[]>(
@@ -138,7 +139,7 @@ export class BookComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/system/add-borrowBook`;
+    const url = `${environment.apiUrl}/system/add-borrowBook`;
 
     const borrowData = {
       user: { id: this.selectedUserId },
@@ -242,8 +243,7 @@ export class BookComponent implements OnInit {
     }
   
     const headers = { Authorization: `Bearer ${token}` };
-    const url = '/api/admin/add-update-book';
-  
+    const url = `${environment.apiUrl}/admin/add-update-book`;  
     const bookData = {
       ...this.newBook,
       author: { id: this.newBook.author.id },
@@ -277,7 +277,7 @@ export class BookComponent implements OnInit {
     }
   
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/admin/add-update-book`;
+    const url = `${environment.apiUrl}/admin/add-update-book`;
   
     this.http.put<Book>(url, this.newBook, { headers }).subscribe({
       next: (response) => {
@@ -332,7 +332,7 @@ export class BookComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/admin/delete-book?id=${this.bookToDeleteId}`;
+    const url = `${environment.apiUrl}/admin/delete-book?id=${this.bookToDeleteId}`;
 
     this.http.delete(url, { headers }).subscribe({
       next: () => {
@@ -389,11 +389,9 @@ export class BookComponent implements OnInit {
     this.updatePagination();
   }
 
-  //lay id tacgia va the loai
   authors: { id: number; fullname: string }[] = [];
 genres: { id: number; name: string }[] = [];
 
-// Tải dữ liệu cho dropdown từ API
 loadAuthorsAndGenres(): void {
   const token = localStorage.getItem('authToken');
   if (!token) {
@@ -403,7 +401,7 @@ loadAuthorsAndGenres(): void {
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  this.http.post<{ id: number; fullname: string }[]>('/api/public/search-author', { headers })
+  this.http.post<{ id: number; fullname: string }[]>(`${environment.apiUrl}/public/search-author`, { headers })
     .subscribe({
       next: (data) => {
         this.authors = data;
@@ -413,7 +411,7 @@ loadAuthorsAndGenres(): void {
       }
     });
 
-  this.http.post<{ id: number; name: string }[]>('/api/public/search-genre', { headers })
+ this.http.post<{ id: number; name: string }[]>(`${environment.apiUrl}/public/search-genre`, { headers })
     .subscribe({
       next: (data) => {
         this.genres = data;

@@ -1,5 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 
 interface User {
@@ -45,7 +46,7 @@ export class UserComponent implements OnInit {
   showBorrowBook(userId: number): void {
     const token = localStorage.getItem('authToken');
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `/api/system/find-borrowBook?userId=${userId}`;
+    const url = `${environment.apiUrl}/system/find-borrowBook?userId=${userId}`;
 
     this.http.get<any[]>(url, { headers }).subscribe({
       next: (data) => {
@@ -90,7 +91,7 @@ export class UserComponent implements OnInit {
     }
   
     const headers = { Authorization: `Bearer ${token}` };
-    const url = '/api/system/update-user';
+    const url = `${environment.apiUrl}/system/update-user`;
   
     this.http.post<User>(url, this.selectedUser, { headers }).subscribe({
       next: (data) => {
@@ -124,7 +125,7 @@ export class UserComponent implements OnInit {
   searchUser(): void {
     const token = localStorage.getItem('authToken');
     const headers = { Authorization: `Bearer ${token}` };
-    const url = '/api/system/search-user';
+    const url = `${environment.apiUrl}/system/search-user`;
   
     const payload = { param: this.param }; 
   
@@ -155,7 +156,7 @@ export class UserComponent implements OnInit {
   loadUsers(): void {
     const token = localStorage.getItem('authToken');
     const headers = { Authorization: `Bearer ${token}` };
-    const url = '/api/admin/getUserByRole?role=ROLE_USER';
+    const url = `${environment.apiUrl}/admin/getUserByRole?role=ROLE_USER`;
 
     this.http.get<User[]>(url, { headers }).subscribe({
       next: (data) => {
@@ -182,7 +183,6 @@ export class UserComponent implements OnInit {
     this.updatePagination();
   }
 
-  //gui thong bao cho user
   sendNotification: boolean = false;
   notificationContent: string = '';
 
@@ -207,7 +207,7 @@ export class UserComponent implements OnInit {
       Authorization: `Bearer ${token}`
     });
   
-    const url = `/api/admin/send-notification?userId=${this.selectedUser.id}&content=${encodeURIComponent(this.notificationContent)}`;
+    const url = `${environment.apiUrl}/admin/send-notification?userId=${this.selectedUser.id}&content=${encodeURIComponent(this.notificationContent)}`;
   
     this.http.post(url, {}, { headers, responseType: 'text' }).subscribe({
       next: (response: string) => {
