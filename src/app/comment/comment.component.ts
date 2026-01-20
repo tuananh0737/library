@@ -17,7 +17,6 @@ export class CommentComponent implements OnInit {
   }
 
   loadComments() {
-    // SỬA: Thêm : any[] cho biến data
     this.commentService.getComments().subscribe((data: any[]) => {
       this.comments = data;
     });

@@ -15,18 +15,18 @@ export class HomeComponent implements OnInit {
   selectedBook: any = null;
   myBookmarks: any[] = [];
   
-  // --- Biến Tìm kiếm ---
+  // --- Tìm kiếm & Lọc ---
   searchQuery: string = '';
   activeCategory: string = 'All';
   categories = ['All', 'Kinh dị', 'Khoa học', 'Văn học', 'Lịch sử', 'Công nghệ', 'Tiểu thuyết'];
 
-  // --- Biến Phân trang ---
+  // --- Phân trang ---
   currentPage: number = 1;
-  itemsPerPage: number = 30; // Giới hạn 30 cuốn/trang
+  itemsPerPage: number = 30;
   paginatedBooks: any[] = [];
   totalPages: number = 0;
 
-  // --- Biến Đánh giá & Bình luận ---
+  // --- Đánh giá & Bình luận ---
   showReviewModal: boolean = false;
   tempRating: number = 0;
   tempHoverRating: number = 0;
@@ -49,8 +49,6 @@ export class HomeComponent implements OnInit {
       next: (data) => {
         this.books = data.map((b: any) => ({ ...b, isFavorite: false }));
         this.filteredBooks = this.books;
-        
-        // Cập nhật phân trang lần đầu
         this.updatePaginatedBooks();
 
         if (this.books.length > 0) {
@@ -62,39 +60,14 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // --- LOGIC PHÂN TRANG ---
-  updatePaginatedBooks() {
-    this.totalPages = Math.ceil(this.filteredBooks.length / this.itemsPerPage);
-    
-    // Đảm bảo currentPage không vượt quá totalPages (trường hợp lọc dữ liệu ít đi)
-    if (this.currentPage > this.totalPages && this.totalPages > 0) {
-        this.currentPage = 1;
-    }
-
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    
-    this.paginatedBooks = this.filteredBooks.slice(startIndex, endIndex);
-  }
-
-  goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePaginatedBooks();
-      // Cuộn lên đầu danh sách sách (tuỳ chọn)
-      const element = document.querySelector('.book-grid');
-      if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
-  // --- CÁC HÀM CŨ (Giữ nguyên logic nhưng thêm gọi updatePaginatedBooks) ---
-
+  // --- LOGIC TOKEN & USER ---
   decodeToken(): void {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.currentUserInfo = {
+          id: payload.id || payload.userId, // Lấy ID để so sánh quyền xóa
           username: payload.sub || payload.username || '',
           email: payload.email || ''
         };
@@ -108,57 +81,35 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  loadUserBookmarks(): void {
-    const token = localStorage.getItem('authToken');
-    if (!token) return; 
-
-    this.bookmarkService.getBookmarks().subscribe({
-      next: (bookmarks: any[]) => {
-        this.myBookmarks = bookmarks;
-        this.books.forEach(book => {
-          const isBookmarked = this.myBookmarks.some(bm => bm.book.id === book.id);
-          book.isFavorite = isBookmarked;
-        });
-        
-        // Lưu ý: Nếu muốn giữ bộ lọc hiện tại thì không gán lại filteredBooks = [...this.books]
-        // Tuy nhiên code cũ của bạn có dòng này, mình sẽ giữ lại và update phân trang
-        this.filteredBooks = [...this.books]; 
-        this.applyFilters(); // Áp dụng lại bộ lọc để đồng bộ
-        
-        if (this.selectedBook) {
-          const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
-          if (updatedBook) this.selectedBook.isFavorite = updatedBook.isFavorite;
-        }
-      },
-      error: (err) => console.error('Lỗi tải bookmark:', err)
-    });
-  }
-
+  // --- LOGIC BÌNH LUẬN (Đã sửa đổi) ---
   loadBookComments(bookId: number): void {
-    const myUser = this.currentUserInfo?.username ? String(this.currentUserInfo.username).toLowerCase() : '';
-    const myEmail = this.currentUserInfo?.email ? String(this.currentUserInfo.email).toLowerCase() : '';
+    const currentUserId = this.currentUserInfo?.id;
 
     this.commentService.getCommentsByBook(bookId).subscribe({
       next: (data: any[]) => {
         this.comments = data.map(c => {
           let isOwner = false;
-          if (c.user) {
-            const apiUsername = String(c.user.username || c.user.sub || '').toLowerCase();
-            const apiEmail = String(c.user.email || '').toLowerCase();
-            if (myUser && apiUsername && myUser === apiUsername) {
-              isOwner = true;
-            } else if (myEmail && apiEmail && myEmail === apiEmail) {
-              isOwner = true;
-            }
+          
+          // Kiểm tra quyền sở hữu dựa trên ID
+          if (c.user && currentUserId) {
+             // Nếu user là object có id
+             if (c.user.id && c.user.id === currentUserId) isOwner = true;
+             // Dự phòng nếu user chỉ là id (number)
+             else if (typeof c.user === 'number' && c.user === currentUserId) isOwner = true;
           }
-          const canDelete = this.isAdmin || isOwner;
+
+          const hasRealPermission = this.isAdmin || isOwner;
+
           return {
             id: c.id,
+            // Hiển thị tên người dùng an toàn
             user: c.user ? (c.user.fullname || c.user.username || 'Người dùng') : 'Ẩn danh',
             rating: c.star,
             content: c.content,
             date: c.createdDate ? new Date(c.createdDate) : new Date(),
-            isCurrentUser: canDelete 
+            
+            isCurrentUser: true,        // Luôn hiện nút xóa
+            canDelete: hasRealPermission // Cờ kiểm tra quyền thực sự
           };
         });
         this.comments.sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -168,29 +119,24 @@ export class HomeComponent implements OnInit {
   }
 
   deleteComment(comment: any): void {
-    if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) return;
-    if (comment.id) {
-      if (this.isAdmin) {
-        this.commentService.deleteCommentByAdmin(comment.id).subscribe({
-          next: () => {
-            this.comments = this.comments.filter(c => c.id !== comment.id);
-            alert('Đã xóa bình luận (Admin).');
-          },
-          error: (err) => { this.retryDeleteAsUser(comment); }
-        });
-      } else {
-        this.retryDeleteAsUser(comment);
-      }
+    if (!comment.canDelete) {
+        alert('Bạn không có quyền xóa bình luận này!');
+        return;
     }
-  }
 
-  retryDeleteAsUser(comment: any): void {
-    this.commentService.deleteComment(comment.id).subscribe({
-      next: () => {
-        this.comments = this.comments.filter(c => c.id !== comment.id);
-        alert('Đã xóa bình luận.');
-      },
-      error: (err) => alert('Không thể xóa: ' + (err.error?.message || 'Lỗi server'))
+    if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) return;
+    
+    // Chọn API xóa phù hợp
+    const deleteObs = this.isAdmin 
+        ? this.commentService.deleteCommentByAdmin(comment.id)
+        : this.commentService.deleteComment(comment.id);
+
+    deleteObs.subscribe({
+        next: () => {
+            this.comments = this.comments.filter(c => c.id !== comment.id);
+            alert('Đã xóa bình luận.');
+        },
+        error: (err) => alert('Lỗi xóa bình luận: ' + (err.error?.message || 'Lỗi server'))
     });
   }
 
@@ -205,15 +151,8 @@ export class HomeComponent implements OnInit {
       .subscribe({
         next: (response: any) => {
           alert('Cảm ơn bạn đã đánh giá!');
-          const newComment = {
-            id: response?.id, 
-            user: 'Tôi (Bạn)', 
-            rating: rating,
-            content: content,
-            date: new Date(),
-            isCurrentUser: true 
-          };
-          this.comments.unshift(newComment);
+          // Tải lại comment để đồng bộ ID và thông tin từ server
+          this.loadBookComments(this.selectedBook.id);
           this.closeReviewForm();
         },
         error: (err) => {
@@ -221,6 +160,48 @@ export class HomeComponent implements OnInit {
           alert('Lỗi gửi bình luận: ' + (err.error?.message || 'Vui lòng thử lại'));
         }
       });
+  }
+
+  // --- LOGIC PHÂN TRANG ---
+  updatePaginatedBooks() {
+    this.totalPages = Math.ceil(this.filteredBooks.length / this.itemsPerPage);
+    if (this.currentPage > this.totalPages && this.totalPages > 0) this.currentPage = 1;
+    
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedBooks = this.filteredBooks.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedBooks();
+      const element = document.querySelector('.book-grid');
+      if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // --- LOGIC KHÁC ---
+  loadUserBookmarks(): void {
+    const token = localStorage.getItem('authToken');
+    if (!token) return; 
+
+    this.bookmarkService.getBookmarks().subscribe({
+      next: (bookmarks: any[]) => {
+        this.myBookmarks = bookmarks;
+        this.books.forEach(book => {
+          book.isFavorite = this.myBookmarks.some(bm => bm.book.id === book.id);
+        });
+        
+        this.filteredBooks = [...this.books]; 
+        this.applyFilters();
+        
+        if (this.selectedBook) {
+          const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
+          if (updatedBook) this.selectedBook.isFavorite = updatedBook.isFavorite;
+        }
+      }
+    });
   }
 
   toggleFavorite(event: Event, book: any): void {
@@ -238,8 +219,7 @@ export class HomeComponent implements OnInit {
             book.isFavorite = false;
             this.loadUserBookmarks(); 
             alert('Đã xóa khỏi danh sách yêu thích.');
-          },
-          error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+          }
         });
       }
     } else {
@@ -248,20 +228,19 @@ export class HomeComponent implements OnInit {
           book.isFavorite = true;
           this.loadUserBookmarks(); 
           alert('Đã thêm vào danh sách yêu thích.');
-        },
-        error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+        }
       });
     }
   }
 
   onSearch() { 
-      this.currentPage = 1; // Reset về trang 1 khi tìm kiếm
+      this.currentPage = 1;
       this.applyFilters(); 
   }
   
   filterCategory(cat: string) {
     this.activeCategory = cat;
-    this.currentPage = 1; // Reset về trang 1 khi đổi danh mục
+    this.currentPage = 1;
     this.applyFilters();
   }
 
@@ -280,8 +259,6 @@ export class HomeComponent implements OnInit {
       );
     }
     this.filteredBooks = tempBooks;
-    
-    // Cập nhật lại danh sách hiển thị theo phân trang
     this.updatePaginatedBooks();
   }
 
