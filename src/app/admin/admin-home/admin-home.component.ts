@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http'; // Đã import HttpHeaders
 import { Chart, registerables } from 'chart.js';
 import { environment } from '../../../environments/environment';
 
@@ -26,9 +26,17 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
     this.loadAllMonthlyStatistics();
   }
 
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken'); 
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
   loadMonthlyStatistics(): void {
     this.http
-      .get(`${environment.apiUrl}/admin/statistics-monthly?month=${this.selectedMonth}&year=${this.selectedYear}`, { responseType: 'text' })
+      .get(`${environment.apiUrl}/admin/statistics-monthly?month=${this.selectedMonth}&year=${this.selectedYear}`, { 
+        headers: this.getHeaders(),
+        responseType: 'text' 
+      })
       .subscribe({
         next: (data: string) => {
           this.monthlyStatistics = data;
@@ -48,7 +56,7 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
   }
 
   loadStatistics(): void {
-    this.http.get(`${environment.apiUrl}/admin/dashboard-statistics`)
+    this.http.get(`${environment.apiUrl}/admin/dashboard-statistics`, { headers: this.getHeaders() })
       .subscribe({
         next: (data: any) => {
           this.statistics = data;
@@ -63,9 +71,7 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
   createBorrowStatusChart(): void {
     const ctx = document.getElementById('borrowStatusChart') as HTMLCanvasElement;
 
-    if (!ctx) {
-      return;
-    }
+    if (!ctx) return;
 
     if (this.borrowStatusChart) {
       this.borrowStatusChart.destroy();
@@ -103,9 +109,14 @@ export class AdminHomeComponent implements OnInit, AfterViewInit {
   }
 
   loadAllMonthlyStatistics(): void {
+    const headers = this.getHeaders(); // Lấy header một lần dùng cho vòng lặp
+
     for (let month = 1; month <= 12; month++) {
       this.http
-        .get(`${environment.apiUrl}/admin/statistics-monthly?month=${month}&year=${this.selectedYear}`, { responseType: 'text' })
+        .get(`${environment.apiUrl}/admin/statistics-monthly?month=${month}&year=${this.selectedYear}`, { 
+          headers: headers,
+          responseType: 'text' 
+        })
         .subscribe({
           next: (data: string) => {
             this.allMonthlyStatistics[month] = data;
