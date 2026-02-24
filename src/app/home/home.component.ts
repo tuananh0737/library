@@ -3,6 +3,8 @@ import { BookService } from '../services/book.service';
 import { BookmarkService } from '../services/bookmark.service';
 import { CommentService } from '../services/comment.service';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -44,22 +46,9 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkAdminRole();
-    this.bookService.getBooks().subscribe({
-      next: (data) => {
-        this.books = data.map((b: any) => ({ ...b, isFavorite: false }));
-        this.filteredBooks = this.books;
-        this.updatePaginatedBooks();
-
-        if (this.books.length > 0) {
-          this.onSelectBook(this.books[0]);
-        }
-        this.loadUserBookmarks();
-      },
-      error: (err) => console.error(err)
-    });
+    this.loadInitialData(); // Gọi hàm tải dữ liệu tối ưu
   }
 
-  // Chỉ cần check role để biết có dùng API admin hay không
   checkAdminRole(): void {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -73,20 +62,51 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  // TẢI DỮ LIỆU SONG SONG (Cải thiện tốc độ load trang)
+  loadInitialData(): void {
+    const token = localStorage.getItem('authToken');
+
+    // 1. Tạo request lấy danh sách sách
+    const booksRequest = this.bookService.getBooks();
+    
+    // 2. Tạo request lấy bookmark (nếu có đăng nhập thì lấy, không thì trả về mảng rỗng)
+    const bookmarksRequest = token 
+      ? this.bookmarkService.getBookmarks().pipe(catchError(() => of([])))
+      : of([]);
+
+    // 3. Dùng forkJoin để bắn 2 API chạy cùng lúc
+    forkJoin({ books: booksRequest, bookmarks: bookmarksRequest }).subscribe({
+      next: (response: { books: any[], bookmarks: any[] }) => {
+        this.myBookmarks = response.bookmarks;
+
+        // Map trạng thái yêu thích ngay từ đầu, tránh render lại nhiều lần
+        this.books = response.books.map((b: any) => {
+          const isFav = this.myBookmarks.some((bm: any) => bm.book.id === b.id);
+          return { ...b, isFavorite: isFav };
+        });
+
+        this.filteredBooks = [...this.books];
+        this.updatePaginatedBooks();
+
+        // Tự động chọn cuốn sách đầu tiên để hiển thị chi tiết
+        if (this.books.length > 0) {
+          this.onSelectBook(this.books[0]);
+        }
+      },
+      error: (err) => console.error('Lỗi tải dữ liệu ban đầu:', err)
+    });
+  }
+
   loadBookComments(bookId: number): void {
     this.commentService.getCommentsByBook(bookId).subscribe({
       next: (data: any[]) => {
         this.comments = data.map(c => {
           return {
             id: c.id,
-            // Hiển thị tên (ưu tiên các trường có thể có trong object user)
             user: c.user ? (c.user.fullname || c.user.username || 'Người dùng') : 'Ẩn danh',
             rating: c.star,
             content: c.content,
             date: c.createdDate ? new Date(c.createdDate) : new Date(),
-            
-            // LOGIC QUAN TRỌNG: Luôn cho phép hiển thị nút xóa
-            // Backend sẽ chặn nếu không có quyền
             isCurrentUser: true 
           };
         });
@@ -97,22 +117,18 @@ export class HomeComponent implements OnInit {
   }
 
   deleteComment(comment: any): void {
-    // Không kiểm tra quyền ở đây nữa, để Backend lo
     if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) return;
     
-    // Chọn API xóa dựa trên Role hiện tại (Admin dùng API Admin, User dùng API User)
     const deleteObservable = this.isAdmin 
         ? this.commentService.deleteCommentByAdmin(comment.id)
         : this.commentService.deleteComment(comment.id);
 
     deleteObservable.subscribe({
         next: () => {
-            // Backend trả về 200 OK -> Xóa thành công
             this.comments = this.comments.filter(c => c.id !== comment.id);
             alert('Đã xóa bình luận.');
         },
         error: (err) => {
-            // Backend trả về lỗi (403, 500...) -> Báo lỗi cho user
             console.error(err);
             const msg = err.error?.message || 'Bạn không có quyền xóa bình luận này!';
             alert('Xóa thất bại: ' + msg);
@@ -131,7 +147,6 @@ export class HomeComponent implements OnInit {
         next: (response: any) => {
           alert('Cảm ơn bạn đã đánh giá!');
           this.closeReviewForm();
-          // Tải lại để hiển thị bình luận mới nhất từ server
           this.loadBookComments(this.selectedBook.id);
         },
         error: (err) => {
@@ -139,8 +154,6 @@ export class HomeComponent implements OnInit {
         }
       });
   }
-
-  // --- Các hàm tiện ích (Phân trang, Search, Bookmark...) ---
 
   updatePaginatedBooks() {
     this.totalPages = Math.ceil(this.filteredBooks.length / this.itemsPerPage);
@@ -160,6 +173,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  // Hàm này giờ chỉ chạy khi User bấm Thêm/Xóa tim để đồng bộ lại dữ liệu
   loadUserBookmarks(): void {
     const token = localStorage.getItem('authToken');
     if (!token) return; 
@@ -170,7 +184,6 @@ export class HomeComponent implements OnInit {
         this.books.forEach(book => {
           book.isFavorite = this.myBookmarks.some(bm => bm.book.id === book.id);
         });
-        this.filteredBooks = [...this.books]; 
         this.applyFilters();
         if (this.selectedBook) {
           const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
