@@ -3,8 +3,6 @@ import { BookService } from '../services/book.service';
 import { BookmarkService } from '../services/bookmark.service';
 import { CommentService } from '../services/comment.service';
 import { Router } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -13,7 +11,6 @@ import { catchError } from 'rxjs/operators';
 })
 export class HomeComponent implements OnInit {
   books: any[] = [];
-  filteredBooks: any[] = [];
   selectedBook: any = null;
   myBookmarks: any[] = [];
   
@@ -21,12 +18,23 @@ export class HomeComponent implements OnInit {
   searchQuery: string = '';
   activeCategory: string = 'All';
   categories = ['All', 'Kinh dị', 'Khoa học', 'Văn học', 'Lịch sử', 'Công nghệ', 'Tiểu thuyết'];
+  
+  categoryMap: { [key: string]: number | null } = {
+    'All': null,
+    'Kinh dị': 1, 
+    'Khoa học': 2,
+    'Văn học': 3,
+    'Lịch sử': 4,
+    'Công nghệ': 5,
+    'Tiểu thuyết': 6
+  };
 
-  // --- Phân trang ---
+  // --- Phân trang Backend & Loading ---
   currentPage: number = 1;
   itemsPerPage: number = 30;
-  paginatedBooks: any[] = [];
   totalPages: number = 0;
+  
+  isLoading: boolean = false; // BỔ SUNG TRẠNG THÁI LOADING
 
   // --- Bình luận ---
   showReviewModal: boolean = false;
@@ -46,7 +54,8 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkAdminRole();
-    this.loadInitialData(); // Gọi hàm tải dữ liệu tối ưu
+    this.loadUserBookmarks();
+    this.loadBooks();
   }
 
   checkAdminRole(): void {
@@ -62,41 +71,140 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // TẢI DỮ LIỆU SONG SONG (Cải thiện tốc độ load trang)
-  loadInitialData(): void {
-    const token = localStorage.getItem('authToken');
+  // === TẢI DỮ LIỆU TỪ SERVER (CÓ LOADING) ===
+  loadBooks(): void {
+    this.isLoading = true; // Bật loading
+    const pageRequest = this.currentPage - 1; 
+    const isSearching = this.searchQuery.trim() !== '' || this.activeCategory !== 'All';
 
-    // 1. Tạo request lấy danh sách sách
-    const booksRequest = this.bookService.getBooks();
-    
-    // 2. Tạo request lấy bookmark (nếu có đăng nhập thì lấy, không thì trả về mảng rỗng)
-    const bookmarksRequest = token 
-      ? this.bookmarkService.getBookmarks().pipe(catchError(() => of([])))
-      : of([]);
+    if (isSearching) {
+      const searchData = {
+        param: this.searchQuery.trim(),
+        genreId: this.categoryMap[this.activeCategory] || null,
+        authorId: null
+      };
 
-    // 3. Dùng forkJoin để bắn 2 API chạy cùng lúc
-    forkJoin({ books: booksRequest, bookmarks: bookmarksRequest }).subscribe({
-      next: (response: { books: any[], bookmarks: any[] }) => {
-        this.myBookmarks = response.bookmarks;
-
-        // Map trạng thái yêu thích ngay từ đầu, tránh render lại nhiều lần
-        this.books = response.books.map((b: any) => {
-          const isFav = this.myBookmarks.some((bm: any) => bm.book.id === b.id);
-          return { ...b, isFavorite: isFav };
-        });
-
-        this.filteredBooks = [...this.books];
-        this.updatePaginatedBooks();
-
-        // Tự động chọn cuốn sách đầu tiên để hiển thị chi tiết
-        if (this.books.length > 0) {
-          this.onSelectBook(this.books[0]);
+      this.bookService.searchBooks(searchData, pageRequest, this.itemsPerPage).subscribe({
+        next: (data: any) => {
+          this.handleBookData(data);
+          this.isLoading = false; // Tắt loading
+        },
+        error: (err) => {
+          console.error(err);
+          this.isLoading = false; // Tắt loading khi lỗi
         }
-      },
-      error: (err) => console.error('Lỗi tải dữ liệu ban đầu:', err)
+      });
+    } else {
+      this.bookService.getBooks(pageRequest, this.itemsPerPage).subscribe({
+        next: (data: any) => {
+          this.handleBookData(data);
+          this.isLoading = false; // Tắt loading
+        },
+        error: (err) => {
+          console.error(err);
+          this.isLoading = false; // Tắt loading khi lỗi
+        }
+      });
+    }
+  }
+
+  handleBookData(data: any): void {
+    const bookList = data.content ? data.content : data;
+    this.books = bookList.map((b: any) => ({ ...b, isFavorite: false }));
+    this.totalPages = data.totalPages !== undefined ? data.totalPages : 1;
+
+    if (this.books.length > 0 && !this.selectedBook) {
+      this.onSelectBook(this.books[0]);
+    } else if (this.books.length === 0) {
+      this.selectedBook = null;
+    }
+    
+    this.updateFavoriteStatus();
+  }
+
+  // === CÁC HÀM XỬ LÝ SỰ KIỆN ===
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadBooks();
+      const element = document.querySelector('.book-grid');
+      if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  onSearch() { 
+      this.currentPage = 1;
+      this.loadBooks();
+  }
+  
+  filterCategory(cat: string) {
+    this.activeCategory = cat;
+    this.currentPage = 1;
+    this.loadBooks();
+  }
+
+  loadUserBookmarks(): void {
+    const token = localStorage.getItem('authToken');
+    if (!token) return; 
+
+    this.bookmarkService.getBookmarks().subscribe({
+      next: (bookmarks: any[]) => {
+        this.myBookmarks = bookmarks;
+        this.updateFavoriteStatus();
+      }
     });
   }
 
+  updateFavoriteStatus() {
+    if (this.books.length > 0 && this.myBookmarks.length > 0) {
+      this.books.forEach(book => {
+        book.isFavorite = this.myBookmarks.some(bm => bm.book.id === book.id);
+      });
+      if (this.selectedBook) {
+        const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
+        if (updatedBook) this.selectedBook.isFavorite = updatedBook.isFavorite;
+      }
+    }
+  }
+
+  toggleFavorite(event: Event, book: any): void {
+    event.stopPropagation();
+    const token = localStorage.getItem('authToken');
+    if (!token) { alert('Bạn cần đăng nhập!'); return; }
+    
+    if (book.isFavorite) {
+      const bookmarkEntry = this.myBookmarks.find(bm => bm.book.id === book.id);
+      if (bookmarkEntry) {
+        this.bookmarkService.deleteBookmark(bookmarkEntry.id).subscribe({
+          next: () => {
+            book.isFavorite = false;
+            this.loadUserBookmarks(); 
+            alert('Đã xóa khỏi danh sách yêu thích.');
+          }
+        });
+      }
+    } else {
+      this.bookmarkService.addBookmark(book.id).subscribe({
+        next: () => {
+          book.isFavorite = true;
+          this.loadUserBookmarks(); 
+          alert('Đã thêm vào danh sách yêu thích.');
+        }
+      });
+    }
+  }
+
+  onSelectBook(book: any): void {
+    this.selectedBook = book;
+    this.comments = []; 
+    this.loadBookComments(book.id); 
+  }
+
+  borrowBook(bookId: number) {
+      this.router.navigate(['/borrow'], { queryParams: { bookId: bookId } });
+  }
+
+  // === XỬ LÝ BÌNH LUẬN ===
   loadBookComments(bookId: number): void {
     this.commentService.getCommentsByBook(bookId).subscribe({
       next: (data: any[]) => {
@@ -136,6 +244,18 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  openReviewForm(): void {
+    const token = localStorage.getItem('authToken');
+    if (!token) { alert('Vui lòng đăng nhập để đánh giá!'); return; }
+    this.showReviewModal = true;
+    this.tempRating = 0;
+    this.tempComment = '';
+  }
+
+  closeReviewForm(): void { this.showReviewModal = false; }
+  
+  setRating(star: number): void { this.tempRating = star; }
+
   submitReview(): void {
     if (this.tempRating === 0) {
       alert('Vui lòng chọn số sao!');
@@ -154,119 +274,4 @@ export class HomeComponent implements OnInit {
         }
       });
   }
-
-  updatePaginatedBooks() {
-    this.totalPages = Math.ceil(this.filteredBooks.length / this.itemsPerPage);
-    if (this.currentPage > this.totalPages && this.totalPages > 0) this.currentPage = 1;
-    
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedBooks = this.filteredBooks.slice(startIndex, endIndex);
-  }
-
-  goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePaginatedBooks();
-      const element = document.querySelector('.book-grid');
-      if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
-  // Hàm này giờ chỉ chạy khi User bấm Thêm/Xóa tim để đồng bộ lại dữ liệu
-  loadUserBookmarks(): void {
-    const token = localStorage.getItem('authToken');
-    if (!token) return; 
-
-    this.bookmarkService.getBookmarks().subscribe({
-      next: (bookmarks: any[]) => {
-        this.myBookmarks = bookmarks;
-        this.books.forEach(book => {
-          book.isFavorite = this.myBookmarks.some(bm => bm.book.id === book.id);
-        });
-        this.applyFilters();
-        if (this.selectedBook) {
-          const updatedBook = this.books.find(b => b.id === this.selectedBook.id);
-          if (updatedBook) this.selectedBook.isFavorite = updatedBook.isFavorite;
-        }
-      }
-    });
-  }
-
-  toggleFavorite(event: Event, book: any): void {
-    event.stopPropagation();
-    const token = localStorage.getItem('authToken');
-    if (!token) { alert('Bạn cần đăng nhập!'); return; }
-    
-    if (book.isFavorite) {
-      const bookmarkEntry = this.myBookmarks.find(bm => bm.book.id === book.id);
-      if (bookmarkEntry) {
-        this.bookmarkService.deleteBookmark(bookmarkEntry.id).subscribe({
-          next: () => {
-            book.isFavorite = false;
-            this.loadUserBookmarks(); 
-            alert('Đã xóa khỏi danh sách yêu thích.');
-          }
-        });
-      }
-    } else {
-      this.bookmarkService.addBookmark(book.id).subscribe({
-        next: () => {
-          book.isFavorite = true;
-          this.loadUserBookmarks(); 
-          alert('Đã thêm vào danh sách yêu thích.');
-        }
-      });
-    }
-  }
-
-  onSearch() { 
-      this.currentPage = 1;
-      this.applyFilters(); 
-  }
-  
-  filterCategory(cat: string) {
-    this.activeCategory = cat;
-    this.currentPage = 1;
-    this.applyFilters();
-  }
-
-  applyFilters() {
-    let tempBooks = [...this.books];
-    if (this.searchQuery && this.searchQuery.trim() !== '') {
-      const query = this.searchQuery.toLowerCase().trim();
-      tempBooks = tempBooks.filter(b => 
-        b.name.toLowerCase().includes(query) || 
-        b.author?.fullname.toLowerCase().includes(query)
-      );
-    }
-    if (this.activeCategory !== 'All') {
-      tempBooks = tempBooks.filter(b => 
-        b.genres?.name && b.genres.name.toLowerCase().includes(this.activeCategory.toLowerCase())
-      );
-    }
-    this.filteredBooks = tempBooks;
-    this.updatePaginatedBooks();
-  }
-
-  onSelectBook(book: any): void {
-    this.selectedBook = book;
-    this.comments = []; 
-    this.loadBookComments(book.id); 
-  }
-
-  borrowBook(bookId: number) {
-      this.router.navigate(['/borrow'], { queryParams: { bookId: bookId } });
-  }
-
-  openReviewForm(): void {
-    const token = localStorage.getItem('authToken');
-    if (!token) { alert('Vui lòng đăng nhập để đánh giá!'); return; }
-    this.showReviewModal = true;
-    this.tempRating = 0;
-    this.tempComment = '';
-  }
-
-  closeReviewForm(): void { this.showReviewModal = false; }
-  setRating(star: number): void { this.tempRating = star; }
 }

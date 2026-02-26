@@ -8,7 +8,7 @@
       </div>
       <div class="search-bar">
         <i class="bi bi-search"></i>
-        <input type="text" placeholder="Nhập tên sách hoặc tác giả..." [(ngModel)]="searchQuery" (input)="onSearch()">
+        <input type="text" placeholder="Nhập tên sách hoặc tác giả..." [(ngModel)]="searchQuery" (keyup.enter)="onSearch()">
       </div>
     </header>
 
@@ -18,47 +18,55 @@
       </button>
     </div>
 
-    <div class="book-grid">
-      <div class="book-card" *ngFor="let book of paginatedBooks" (click)="onSelectBook(book)" [class.selected]="selectedBook?.id === book.id">
-        <div class="card-cover">
-          <img [src]="book.image ? book.image : 'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" 
-               alt="{{book.name}}" 
-               style="object-fit: cover;">
-          
-          <button class="btn-fav-card" [class.active]="book.isFavorite" (click)="toggleFavorite($event, book)">
-             <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
-          </button>
-
-          <div class="hover-overlay"><i class="bi bi-eye-fill"></i></div>
-        </div>
-        <div class="card-info">
-          <h3 class="book-title" title="{{book.name}}">{{book.name}}</h3>
-          <p class="book-author">{{book.author?.fullname}}</p>
-        </div>
+    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+      <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Đang tải...</span>
       </div>
-      
-      <div *ngIf="filteredBooks.length === 0" class="no-results"><p>Không tìm thấy sách nào phù hợp.</p></div>
     </div>
 
-    <div class="pagination-container d-flex justify-content-center mt-4 mb-5" *ngIf="totalPages > 1">
-        <nav aria-label="Page navigation">
-          <ul class="pagination shadow-sm">
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <button class="page-link border-0" (click)="goToPage(currentPage - 1)" aria-label="Previous">
-                <i class="bi bi-chevron-left"></i> Trước
-              </button>
-            </li>
-            <li class="page-item active">
-              <span class="page-link border-0 bg-primary">{{ currentPage }} / {{ totalPages }}</span>
-            </li>
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <button class="page-link border-0" (click)="goToPage(currentPage + 1)" aria-label="Next">
-                Sau <i class="bi bi-chevron-right"></i>
-              </button>
-            </li>
-          </ul>
-        </nav>
+    <ng-container *ngIf="!isLoading">
+      <div class="book-grid">
+        <div class="book-card" *ngFor="let book of books" (click)="onSelectBook(book)" [class.selected]="selectedBook?.id === book.id">
+          <div class="card-cover">
+            <img [src]="book.image ? book.image : 'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" 
+                 alt="{{book.name}}" 
+                 style="object-fit: cover;">
+            
+            <button class="btn-fav-card" [class.active]="book.isFavorite" (click)="toggleFavorite($event, book)">
+               <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
+            </button>
+  
+            <div class="hover-overlay"><i class="bi bi-eye-fill"></i></div>
+          </div>
+          <div class="card-info">
+            <h3 class="book-title" title="{{book.name}}">{{book.name}}</h3>
+            <p class="book-author">{{book.author?.fullname}}</p>
+          </div>
+        </div>
+        
+        <div *ngIf="books.length === 0" class="no-results"><p>Không tìm thấy sách nào phù hợp.</p></div>
       </div>
+  
+      <div class="pagination-container d-flex justify-content-center mt-4 mb-5" *ngIf="totalPages > 1">
+          <nav aria-label="Page navigation">
+            <ul class="pagination shadow-sm">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link border-0" (click)="goToPage(currentPage - 1)" aria-label="Previous">
+                  <i class="bi bi-chevron-left"></i> Trước
+                </button>
+              </li>
+              <li class="page-item active">
+                <span class="page-link border-0 bg-primary">{{ currentPage }} / {{ totalPages }}</span>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link border-0" (click)="goToPage(currentPage + 1)" aria-label="Next">
+                  Sau <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+    </ng-container>
   </div>
 
   <aside class="detail-panel" *ngIf="selectedBook">

@@ -20,7 +20,7 @@
               <input type="text" 
                      [placeholder]="getPlaceholder()" 
                      [(ngModel)]="searchText" 
-                     (input)="onSearch()"
+                     (keyup.enter)="onSearch()"
                      style="width: 100%; padding: 8px 10px 8px 35px; border-radius: 6px; border: 1px solid #ddd;">
             </div>
           </div>
@@ -32,55 +32,64 @@
       </header>
 
       <div class="results-area">
-        <div class="book-grid">
-          <div class="book-card" *ngFor="let book of paginatedBooks" (click)="onSelectBook(book)"
-               [class.active-card]="selectedBook?.id === book.id">
-            <div class="card-cover">
-              <img [src]="book.image ? book.image : 'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" 
-                   alt="{{book.name}}"
-                   style="object-fit: cover;">
-              
-              <button class="btn-fav-card" [class.active]="book.isFavorite" (click)="toggleFavorite($event, book)">
-                <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
-              </button>
-              
-              <div class="hover-overlay"><span class="overlay-icon"><i class="bi bi-eye-fill"></i></span></div>
-            </div>
-            <div class="card-info">
-              <h3 class="book-title" title="{{book.name}}">{{book.name}}</h3>
-              <p class="book-author">{{book.author?.fullname}}</p>
-              <div class="book-meta">
-                <span class="meta-badge">{{book.genres?.name}}</span>
-                <span class="meta-year">{{book.publishYear}}</span>
+        
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+          <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!isLoading">
+          <div class="book-grid">
+            <div class="book-card" *ngFor="let book of paginatedBooks" (click)="onSelectBook(book)"
+                 [class.active-card]="selectedBook?.id === book.id">
+              <div class="card-cover">
+                <img [src]="book.image ? book.image : 'https://placehold.co/400x600/e2e8f0/1e293b?text=' + (book.name.charAt(0) | uppercase)" 
+                     alt="{{book.name}}"
+                     style="object-fit: cover;">
+                
+                <button class="btn-fav-card" [class.active]="book.isFavorite" (click)="toggleFavorite($event, book)">
+                  <i class="bi" [ngClass]="book.isFavorite ? 'bi-heart-fill' : 'bi-heart'"></i>
+                </button>
+                
+                <div class="hover-overlay"><span class="overlay-icon"><i class="bi bi-eye-fill"></i></span></div>
+              </div>
+              <div class="card-info">
+                <h3 class="book-title" title="{{book.name}}">{{book.name}}</h3>
+                <p class="book-author">{{book.author?.fullname}}</p>
+                <div class="book-meta">
+                  <span class="meta-badge">{{book.genres?.name}}</span>
+                  <span class="meta-year">{{book.publishYear}}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div *ngIf="filteredBooks.length === 0" class="empty-state">
-           <div class="empty-icon"><i class="bi bi-search"></i></div>
-           <h3>Không tìm thấy kết quả</h3>
-        </div>
+          
+          <div *ngIf="books.length === 0" class="empty-state">
+             <div class="empty-icon"><i class="bi bi-search"></i></div>
+             <h3>Không tìm thấy kết quả</h3>
+          </div>
 
-        <div class="pagination-container d-flex justify-content-center mt-5 mb-5" *ngIf="totalPages > 1">
-            <nav>
-              <ul class="pagination shadow-sm">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                  <button class="page-link border-0" (click)="goToPage(currentPage - 1)">
-                    <i class="bi bi-chevron-left"></i> Trước
-                  </button>
-                </li>
-                <li class="page-item active" aria-current="page">
-                  <span class="page-link border-0 bg-primary">{{ currentPage }} / {{ totalPages }}</span>
-                </li>
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                  <button class="page-link border-0" (click)="goToPage(currentPage + 1)">
-                    Sau <i class="bi bi-chevron-right"></i>
-                  </button>
-                </li>
-              </ul>
-            </nav>
-        </div>
+          <div class="pagination-container d-flex justify-content-center mt-5 mb-5" *ngIf="totalPages > 1">
+              <nav>
+                <ul class="pagination shadow-sm">
+                  <li class="page-item" [class.disabled]="currentPage === 1">
+                    <button class="page-link border-0" (click)="goToPage(currentPage - 1)">
+                      <i class="bi bi-chevron-left"></i> Trước
+                    </button>
+                  </li>
+                  <li class="page-item active" aria-current="page">
+                    <span class="page-link border-0 bg-primary">{{ currentPage }} / {{ totalPages }}</span>
+                  </li>
+                  <li class="page-item" [class.disabled]="currentPage === totalPages">
+                    <button class="page-link border-0" (click)="goToPage(currentPage + 1)">
+                      Sau <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+          </div>
+        </ng-container>
 
       </div>
     </div>
