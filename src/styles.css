@@ -43,7 +43,34 @@
   background-color: #f8f9fa;
   border-color: #dee2e6;
 }
-/* --- ADMIN PAGE HEADER (Dùng chung) --- */
+:root {
+  --bg-app: #f8f9fa;          
+  --sidebar-bg: #ffffff;
+  --primary-accent: #0d6efd;   
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --border-radius: 12px;
+}
+
+body {
+  background-color: var(--bg-app);
+  font-family: 'Inter', sans-serif;
+  color: var(--text-main);
+}
+
+.content-card {
+  background: white;
+  border-radius: var(--border-radius);
+  border: 1px solid #f1f5f9;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.content-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -53,6 +80,7 @@
   padding: 20px 24px;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
 }
 
 .header-left h2 {

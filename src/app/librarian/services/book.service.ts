@@ -8,10 +8,15 @@ import { environment } from '../../../environments/environment';
 })
 export class BookService {
   private apiUrl = `${environment.apiUrl}/public/find-all-book`;
+  private searchUrl = `${environment.apiUrl}/public/search-book`;
 
   constructor(private http: HttpClient) { }
 
-  getBooks(): Observable<any> {
-    return this.http.get<any>(this.apiUrl);
+  getBooks(page: number, size: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}?page=${page}&size=${size}`);
+  }
+
+  searchBooks(searchData: any, page: number, size: number): Observable<any> {
+    return this.http.post<any>(`${this.searchUrl}?page=${page}&size=${size}`, searchData);
   }
 }
