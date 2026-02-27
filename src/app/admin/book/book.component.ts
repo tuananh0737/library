@@ -28,13 +28,11 @@ export class BookComponent implements OnInit {
   selectedBook: Book | null = null;
   searchQuery: string = '';
   
-  // --- Loading & Pagination ---
   isLoading: boolean = false;
   currentPage: number = 1; 
-  itemsPerPage: number = 8; 
+  itemsPerPage: number = 30; 
   totalPages: number = 1;
 
-  // --- UI States ---
   updateSuccessful: boolean = false;
   showBorrowBook: boolean = false;
   showAddBookForm: boolean = false; 
@@ -42,7 +40,6 @@ export class BookComponent implements OnInit {
   deleteSuccessful: boolean = false;
   bookToDeleteId: number | null = null;
 
-  // --- Form Data ---
   users: { id: number; fullname: string; idCard: string; phone: string }[] = [];
   userSearchQuery: string = '';
   selectedUserId: number | null = null;
@@ -62,7 +59,6 @@ export class BookComponent implements OnInit {
     this.loadBooks();
   }
 
-  // === TẢI DỮ LIỆU & PHÂN TRANG BẰNG BACKEND ===
   loadBooks(): void {
     this.isLoading = true;
     const pageRequest = this.currentPage - 1;
@@ -107,10 +103,10 @@ export class BookComponent implements OnInit {
     this.loadBooks();
   }
 
-  // === GIỮ NGUYÊN CÁC HÀM CŨ ===
   borrow(book: Book): void {
     this.selectedBook = book; this.showBorrowBook = true; this.userSearchQuery = ''; this.users = [];
   }
+
   searchUser(): void {
     const query = this.userSearchQuery.trim();
     if (!query) { alert('Vui lòng nhập từ khóa!'); return; }
@@ -122,7 +118,9 @@ export class BookComponent implements OnInit {
         error: (err) => console.error(err)
       });
   }
+
   selectUser(userId: number): void { this.selectedUserId = userId; }
+
   confirmBorrow(): void {
     if (!this.selectedUserId || !this.selectedBook) { alert('Vui lòng chọn sách và người dùng!'); return; }
     const token = localStorage.getItem('authToken');
@@ -133,47 +131,100 @@ export class BookComponent implements OnInit {
         error: (err) => { console.error(err); alert('Lỗi mượn sách!'); }
       });
   } 
+
   closeBorrowBookForm(): void { this.showBorrowBook = false; this.selectedBook = null; this.selectedUserId = null; }
+  
   trackByBookId(index: number, book: Book): number { return book.id; }
+  
   showDetails(book: Book): void { this.selectedBook = book; }
+  
   closeForm(): void { this.selectedBook = null; }
-  openAddBookForm(): void { this.resetNewBookForm(); this.showAddBookForm = true; }
+  
+  openAddBookForm(): void { 
+    this.resetNewBookForm(); 
+    this.showAddBookForm = true; 
+  }
+  
   closeAddBookForm(): void { this.showAddBookForm = false; }
+  
+  openEditBookForm(book: Book): void { 
+    this.newBook = { ...book }; 
+    this.showAddBookForm = true; 
+  }
+
   saveNewBook(): void {
-    if (this.validateBook(this.newBook)) { this.newBook.id ? this.updateBook() : this.addBook(); } 
-    else { alert('Vui lòng điền tất cả các trường bắt buộc.'); }
-  }
-  private validateBook(book: Book): boolean { return (!!book.name && book.author.id > 0 && book.genres.id > 0 && book.numberPage > 0 && book.publishYear > 0 && !!book.description && book.quantity >= 0); }
-  addBook(): void {
+    if (!this.validateBook(this.newBook)) { 
+      alert('Vui lòng điền tất cả các trường bắt buộc.');
+      return;
+    }
+
     const token = localStorage.getItem('authToken');
     if (!token) return;
-    const bookData = { ...this.newBook, author: { id: this.newBook.author.id }, genres: { id: this.newBook.genres.id } };
-    this.http.post<Book>(`${environment.apiUrl}/admin/add-update-book`, bookData, { headers: { Authorization: `Bearer ${token}` } }).subscribe({
-      next: (response) => { alert(`Sách đã được thêm thành công!`); this.closeAddBookForm(); this.loadBooks(); }, // Gọi lại loadBooks để lấy data mới
-      error: (err) => console.error(err)
+
+    const payload: any = {
+      ...this.newBook,
+      author: { id: Number(this.newBook.author.id) },
+      genres: { id: Number(this.newBook.genres.id) }
+    };
+
+    delete payload.qrCode;
+    
+    if (payload.id === 0) {
+      payload.id = null;
+    }
+
+    this.http.post<Book>(`${environment.apiUrl}/system/add-update-book`, payload, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    }).subscribe({
+      next: () => { 
+        alert(this.newBook.id === 0 ? 'Thêm sách mới thành công!' : 'Sách đã được cập nhật thành công!'); 
+        this.closeAddBookForm(); 
+        this.loadBooks(); 
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Có lỗi xảy ra khi lưu sách!');
+      }
     });
   }
-  openEditBookForm(book: Book): void { this.newBook = { ...book }; this.showAddBookForm = true; }
-  updateBook(): void {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-    this.http.put<Book>(`${environment.apiUrl}/admin/add-update-book`, this.newBook, { headers: { Authorization: `Bearer ${token}` } }).subscribe({
-      next: (response) => { alert(`Sách đã được cập nhật!`); this.closeAddBookForm(); this.loadBooks(); },
-      error: (err) => console.error(err)
-    });
+
+  private validateBook(book: Book): boolean { 
+    return (!!book.name && book.author.id > 0 && book.genres.id > 0 && book.numberPage > 0 && book.publishYear > 0 && !!book.description && book.quantity >= 0); 
   }
-  resetNewBookForm(): void { this.newBook = { id: 0, name: '', numberPage: 0, publishYear: 0, description: '', quantity: 0, author: { id: 0, fullname: '', nationality: '' }, genres: { id: 0, name: '' }, qrCode: '', location: { id: 0, room: '', shelf: ''} }; }
+
+  resetNewBookForm(): void { 
+    this.newBook = { id: 0, name: '', numberPage: 0, publishYear: 0, description: '', quantity: 0, author: { id: 0, fullname: '', nationality: '' }, genres: { id: 0, name: '' }, qrCode: '', location: { id: 0, room: '', shelf: ''} }; 
+  }
+
+  // === XỬ LÝ XÓA SÁCH ===
   deleteBook(bookId: number): void { this.bookToDeleteId = bookId; this.showDeleteConfirm = true; }
+  
   confirmDelete(): void {
     if (!this.bookToDeleteId) return;
     const token = localStorage.getItem('authToken');
     if (!token) return;
-    this.http.delete(`${environment.apiUrl}/admin/delete-book?id=${this.bookToDeleteId}`, { headers: { Authorization: `Bearer ${token}` } }).subscribe({
-      next: () => { this.showDeleteConfirm = false; this.bookToDeleteId = null; this.deleteSuccessful = true; this.loadBooks(); },
-      error: (err) => { console.error(err); this.showDeleteConfirm = false; }
+
+    // Gọi API /system/delete-book
+    this.http.delete(`${environment.apiUrl}/system/delete-book?id=${this.bookToDeleteId}`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    }).subscribe({
+      next: () => { 
+        this.showDeleteConfirm = false; 
+        this.bookToDeleteId = null; 
+        this.deleteSuccessful = true; 
+        this.loadBooks(); 
+      },
+      error: (err) => { 
+        console.error(err); 
+        this.showDeleteConfirm = false; 
+        alert('Lỗi khi xóa sách!');
+      }
     });
   }
+
   cancelDelete(): void { this.showDeleteConfirm = false; this.bookToDeleteId = null; this.deleteSuccessful = false; this.updateSuccessful = false; }
+  
+  // === TẢI DANH MỤC ===
   loadAuthorsAndGenres(): void {
     const token = localStorage.getItem('authToken');
     if (!token) return;

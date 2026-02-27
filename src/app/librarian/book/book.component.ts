@@ -4,10 +4,19 @@ import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
+// Đã đồng bộ interface Book giống với Admin
 interface Book {
-  id: number; name: string;image?: string; numberPage: number; publishYear: number; description: string; quantity: number;
+  id: number; 
+  name: string;
+  image?: string; 
+  numberPage: number; 
+  publishYear: number; 
+  description: string; 
+  quantity: number;
   author: { id: number; fullname: string; nationality: string; };
   genres: { id: number; name: string; };
+  qrCode: string;
+  location: { id: number; room: string; shelf: string; };
 }
 
 @Component({
@@ -23,7 +32,7 @@ export class BookLibrarianComponent implements OnInit {
   
   isLoading: boolean = false;
   currentPage: number = 1; 
-  itemsPerPage: number = 8; 
+  itemsPerPage: number = 30; 
   totalPages: number = 1;
 
   showOutOfStock: boolean = false;
@@ -32,7 +41,12 @@ export class BookLibrarianComponent implements OnInit {
   userSearchQuery: string = '';
   selectedUserId: number | null = null;
 
-  constructor(private bookService: BookService, private http: HttpClient, private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private bookService: BookService, 
+    private http: HttpClient, 
+    private router: Router, 
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.loadBooks();
@@ -46,12 +60,18 @@ export class BookLibrarianComponent implements OnInit {
       const searchData = { param: this.searchQuery.trim(), genreId: null, authorId: null };
       this.bookService.searchBooks(searchData, pageRequest, this.itemsPerPage).subscribe({
         next: (data: any) => this.handleBookData(data),
-        error: (err) => { console.error(err); this.isLoading = false; }
+        error: (err) => { 
+          console.error(err); 
+          this.isLoading = false; 
+        }
       });
     } else {
       this.bookService.getBooks(pageRequest, this.itemsPerPage).subscribe({
         next: (data: any) => this.handleBookData(data),
-        error: (err) => { console.error(err); this.isLoading = false; }
+        error: (err) => { 
+          console.error(err); 
+          this.isLoading = false; 
+        }
       });
     }
   }
@@ -84,29 +104,78 @@ export class BookLibrarianComponent implements OnInit {
     this.loadBooks();
   }
 
-  borrow(book: Book): void { this.selectedBook = book; this.showBorrowBook = true; this.userSearchQuery = ''; this.users = []; }
+  resetSearch(): void { 
+    this.searchQuery = ''; 
+    this.currentPage = 1; 
+    this.loadBooks(); 
+  } 
+
+  // === XỬ LÝ MƯỢN SÁCH ===
+  borrow(book: Book): void { 
+    this.selectedBook = book; 
+    this.showBorrowBook = true; 
+    this.userSearchQuery = ''; 
+    this.users = []; 
+  }
+
   searchUser(): void {
     const query = this.userSearchQuery.trim();
     if (!query) { alert('Vui lòng nhập từ khóa!'); return; }
     const token = localStorage.getItem('authToken');
     if (!token) return;
+
     this.http.post<any[]>(`${environment.apiUrl}/system/search-user`, { param: query }, { headers: { Authorization: `Bearer ${token}` } })
-      .subscribe({ next: (data) => { this.users = data; if (this.users.length === 0) alert('Không tìm thấy người dùng nào.'); }, error: (err) => console.error(err) });
+      .subscribe({ 
+        next: (data) => { 
+          this.users = data; 
+          if (this.users.length === 0) alert('Không tìm thấy người dùng nào.'); 
+        }, 
+        error: (err) => console.error(err) 
+      });
   }
-  selectUser(userId: number): void { this.selectedUserId = userId; }
+
+  selectUser(userId: number): void { 
+    this.selectedUserId = userId; 
+  }
+
   confirmBorrow(): void {
-    if (!this.selectedUserId || !this.selectedBook) { alert('Vui lòng chọn sách và người dùng!'); return; }
+    if (!this.selectedUserId || !this.selectedBook) { 
+      alert('Vui lòng chọn sách và người dùng!'); 
+      return; 
+    }
     const token = localStorage.getItem('authToken');
     if (!token) return;
+
     this.http.post(`${environment.apiUrl}/system/add-borrowBook`, { user: { id: this.selectedUserId }, book: { id: this.selectedBook.id } }, { headers: { Authorization: `Bearer ${token}` } })
       .subscribe({
-        next: () => { alert('Mượn sách thành công!'); this.showBorrowBook = false; this.selectedUserId = null; },
-        error: (err) => { console.error(err); alert('Lỗi mượn sách!'); }
+        next: () => { 
+          alert('Mượn sách thành công!'); 
+          this.showBorrowBook = false; 
+          this.selectedUserId = null; 
+          this.loadBooks(); // Cập nhật lại số lượng sách hiển thị
+        },
+        error: (err) => { 
+          console.error(err); 
+          alert('Lỗi mượn sách!'); 
+        }
       });
   } 
-  closeBorrowBookForm(): void { this.showBorrowBook = false; this.selectedBook = null; this.selectedUserId = null; }
-  trackByBookId(index: number, book: Book): number { return book.id; }
-  showDetails(book: Book): void { this.selectedBook = book; }
-  closeForm(): void { this.selectedBook = null; }
-  resetSearch(): void { this.searchQuery = ''; this.currentPage = 1; this.loadBooks(); } 
+
+  closeBorrowBookForm(): void { 
+    this.showBorrowBook = false; 
+    this.selectedBook = null; 
+    this.selectedUserId = null; 
+  }
+
+  trackByBookId(index: number, book: Book): number { 
+    return book.id; 
+  }
+
+  showDetails(book: Book): void { 
+    this.selectedBook = book; 
+  }
+
+  closeForm(): void { 
+    this.selectedBook = null; 
+  }
 }
