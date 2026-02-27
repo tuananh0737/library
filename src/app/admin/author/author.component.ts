@@ -96,7 +96,7 @@ export class AuthorComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `${environment.apiUrl}/admin/add-update-author`;
+    const url = `${environment.apiUrl}/system/add-update-author`;
 
     this.http.post<Author>(url, this.currentAuthor, { headers }).subscribe({
       next: (response) => {
@@ -131,7 +131,7 @@ export class AuthorComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `${environment.apiUrl}/admin/delete-author?id=${authorId}`;
+    const url = `${environment.apiUrl}/system/delete-author?id=${authorId}`;
 
     this.http.delete(url, { headers }).subscribe({
       next: () => {

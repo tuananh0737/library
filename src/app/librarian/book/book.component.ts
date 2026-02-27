@@ -110,7 +110,6 @@ export class BookLibrarianComponent implements OnInit {
     this.loadBooks(); 
   } 
 
-  // === XỬ LÝ MƯỢN SÁCH ===
   borrow(book: Book): void { 
     this.selectedBook = book; 
     this.showBorrowBook = true; 
