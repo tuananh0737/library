@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
-
 interface Author {
   id: number;
   fullname: string;
@@ -56,7 +55,7 @@ export class AuthorComponent implements OnInit {
           author.fullname.toLowerCase().includes(this.searchQuery.toLowerCase())
         )
       : this.authors;
-    this.totalPages = Math.ceil(filtered.length / this.pageSize);
+    this.totalPages = Math.ceil(filtered.length / this.pageSize) || 1;
     const startIndex = (this.currentPage - 1) * this.pageSize;
     this.paginatedAuthors = filtered.slice(startIndex, startIndex + this.pageSize);
   }
@@ -122,7 +121,6 @@ export class AuthorComponent implements OnInit {
     this.showDeleteConfirm = true;
   }
   
-
   deleteAuthor(authorId: number): void {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -131,6 +129,7 @@ export class AuthorComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
+    // TỐI ƯU: Đổi sang /system/
     const url = `${environment.apiUrl}/system/delete-author?id=${authorId}`;
 
     this.http.delete(url, { headers }).subscribe({
