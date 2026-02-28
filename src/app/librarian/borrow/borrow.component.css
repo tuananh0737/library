@@ -1,29 +1,50 @@
-.dropdown-results {
+/* Tùy chỉnh danh sách kết quả xổ xuống (Auto-complete) */
+.custom-dropdown {
   z-index: 1050; 
   max-height: 250px; 
   overflow-y: auto;
-  margin-top: 2px;
-  border-radius: 0 0 0.5rem 0.5rem;
+  margin-top: 5px;
+  border-radius: 0.5rem;
 }
 
+.custom-dropdown .list-group-item {
+  border-left: 0;
+  border-right: 0;
+  padding: 12px 15px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-dropdown .list-group-item:first-child {
+  border-top: 0;
+}
+
+.custom-dropdown .list-group-item:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+/* Hiệu ứng chuyển Tab */
+.animation-fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tùy chỉnh Nav Pills (Tabs) */
 .nav-pills .nav-link {
-  color: #495057;
+  color: #6c757d;
   transition: all 0.3s ease;
-  border-radius: 8px;
-  margin: 0 5px;
 }
 
 .nav-pills .nav-link.active {
   background-color: #0d6efd;
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
 }
 
 .nav-pills .nav-link:hover:not(.active) {
   background-color: #e9ecef;
-}
-
-.table-hover tbody tr {
-  transition: background-color 0.2s ease;
 }
