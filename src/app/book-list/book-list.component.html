@@ -70,24 +70,22 @@
              <h3>Không tìm thấy kết quả</h3>
           </div>
 
-          <div class="pagination-container d-flex justify-content-center mt-5 mb-5" *ngIf="totalPages > 1">
-              <nav>
-                <ul class="pagination shadow-sm">
-                  <li class="page-item" [class.disabled]="currentPage === 1">
-                    <button class="page-link border-0" (click)="goToPage(currentPage - 1)">
-                      <i class="bi bi-chevron-left"></i> Trước
-                    </button>
-                  </li>
-                  <li class="page-item active" aria-current="page">
-                    <span class="page-link border-0 bg-primary">{{ currentPage }} / {{ totalPages }}</span>
-                  </li>
-                  <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <button class="page-link border-0" (click)="goToPage(currentPage + 1)">
-                      Sau <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
+          <div class="pagination d-flex justify-content-center align-items-center mt-5 mb-4" *ngIf="totalPages > 1">
+            <button class="btn btn-outline-secondary me-2 shadow-sm" 
+                    [disabled]="currentPage === 1" 
+                    (click)="goToPage(currentPage - 1)">
+              <i class="bi bi-chevron-left"></i> Trước
+            </button>
+            
+            <span class="mx-3 fw-bold px-4 py-2 bg-light rounded shadow-sm border text-primary"> 
+              {{ currentPage }} / {{ totalPages }}
+            </span>
+            
+            <button class="btn btn-outline-secondary ms-2 shadow-sm" 
+                    [disabled]="currentPage === totalPages" 
+                    (click)="goToPage(currentPage + 1)">
+              Sau <i class="bi bi-chevron-right"></i>
+            </button>
           </div>
         </ng-container>
 
