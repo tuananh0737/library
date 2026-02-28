@@ -2,7 +2,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
-
 interface User {
   id: number;
   username: string;
@@ -20,8 +19,10 @@ interface BorrowedBook {
   genre: string;
   publishYear: number;
   borrowedDate: string;
+  returnDueDate: string;     // Hạn trả
+  actualReturnDate: string;  // Ngày trả thực tế
+  returned: boolean;         // Trạng thái đã trả
 }
-
 
 @Component({
   selector: 'app-user',
@@ -32,95 +33,44 @@ export class UserComponent implements OnInit {
   users: User[] = [];
   selectedUser: User | null = null;
   showEditForm: boolean = false;
+  
+  param: string = '';
+  errorMessage: string | null = null; 
+  actionSuccessMessage: string = ''; 
+
+  borrowedBooks: BorrowedBook[] = []; 
+  showModal: boolean = false;
+  
+  sendNotification: boolean = false;
+  notificationContent: string = '';
+
+  currentPage: number = 1; 
+  pageSize: number = 10; 
+  paginatedUsers: User[] = []; 
+  totalPages: number = 1; 
 
   constructor(private http: HttpClient) {}
-
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
-  borrowedBooks: BorrowedBook[] = []; 
-  showModal: boolean = false;
-
-  showBorrowBook(userId: number): void {
+  loadUsers(): void {
     const token = localStorage.getItem('authToken');
     const headers = { Authorization: `Bearer ${token}` };
-    const url = `${environment.apiUrl}/system/find-borrowBook?userId=${userId}`;
+    const url = `${environment.apiUrl}/admin/getUserByRole?role=ROLE_USER`;
 
-    this.http.get<any[]>(url, { headers }).subscribe({
+    this.http.get<User[]>(url, { headers }).subscribe({
       next: (data) => {
-        this.borrowedBooks = data.map(item => ({
-          bookName: item.book.name,
-          authorName: item.book.author.fullname,
-          borrowedDate: item.createdDate,
-          genre: item.book.genres.name,       
-          publishYear: item.book.publishYear 
-        }));
-        this.showModal = true; 
+        this.users = data;
+        this.totalPages = Math.ceil(this.users.length / this.pageSize) || 1; 
+        this.updatePagination();
       },
       error: (err) => {
-        console.error('Lỗi khi lấy sách đã mượn:', err);
-        alert('Không thể lấy danh sách sách đã mượn.');
-      }
-    });
-  }
-  closeModal(): void {
-    this.showModal = false; 
-  }
-
-  showDeleteConfirm: boolean = false;
-  userToDeleteId: number | null = null;
-
-  openEditUserForm(user: User): void {
-    this.selectedUser = { ...user };
-    this.showEditForm = true;
-    console.log('data: ',user);
-    
-  }
-  
-  errorMessage: string | null = null; 
-
-  saveUser(): void {
-    if (!this.selectedUser) return;
-  
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      this.errorMessage = 'Bạn chưa đăng nhập!';
-      return;
-    }
-  
-    const headers = { Authorization: `Bearer ${token}` };
-    const url = `${environment.apiUrl}/system/update-user`;
-  
-    this.http.post<User>(url, this.selectedUser, { headers }).subscribe({
-      next: (data) => {
-        const index = this.users.findIndex((u) => u.id === this.selectedUser?.id);
-        if (index !== -1) {
-          this.users[index] = data;
-        }
-        this.closeEditForm();
-        alert('Cập nhật người dùng thành công!');
-        window.location.reload();
-      },
-      error: (err) => {
-        if (err.error) {
-          this.errorMessage = err.error; 
-        } else {
-          this.errorMessage = 'Đã xảy ra lỗi khi cập nhật người dùng.';
-        }
+        console.error('Lỗi khi gọi API:', err);
       },
     });
   }
-  
-  closeEditForm(): void {
-    this.showEditForm = false;
-    this.selectedUser = null;
-    this.errorMessage = null;
-  }
-
-  //searchUser
-  param: string = '';
 
   searchUser(): void {
     const token = localStorage.getItem('authToken');
@@ -137,35 +87,13 @@ export class UserComponent implements OnInit {
           this.users = [data]; 
         } else {
           this.users = [];
-          alert('Không tìm thấy người dùng nào phù hợp.');
         }
-      },
-      error: (err) => {
-        console.error('Lỗi khi tìm kiếm người dùng:', err);
-        alert('Không thể tìm kiếm người dùng.');
-      },
-    });
-  }
-
-  // phân trang
-  currentPage: number = 1; 
-  pageSize: number = 10; 
-  paginatedUsers: User[] = []; 
-  totalPages: number = 1; 
-
-  loadUsers(): void {
-    const token = localStorage.getItem('authToken');
-    const headers = { Authorization: `Bearer ${token}` };
-    const url = `${environment.apiUrl}/admin/getUserByRole?role=ROLE_USER`;
-
-    this.http.get<User[]>(url, { headers }).subscribe({
-      next: (data) => {
-        this.users = data;
-        this.totalPages = Math.ceil(this.users.length / this.pageSize); 
+        this.currentPage = 1;
+        this.totalPages = Math.ceil(this.users.length / this.pageSize) || 1;
         this.updatePagination();
       },
       error: (err) => {
-        console.error('Lỗi khi gọi API:', err);
+        console.error('Lỗi khi tìm kiếm người dùng:', err);
       },
     });
   }
@@ -175,7 +103,6 @@ export class UserComponent implements OnInit {
     const endIndex = startIndex + this.pageSize;
     this.paginatedUsers = this.users.slice(startIndex, endIndex); 
   }
-
   
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages) return; 
@@ -183,8 +110,74 @@ export class UserComponent implements OnInit {
     this.updatePagination();
   }
 
-  sendNotification: boolean = false;
-  notificationContent: string = '';
+  showBorrowBook(userId: number): void {
+    const token = localStorage.getItem('authToken');
+    const headers = { Authorization: `Bearer ${token}` };
+    const url = `${environment.apiUrl}/system/find-borrowBook?userId=${userId}`;
+
+    this.http.get<any[]>(url, { headers }).subscribe({
+      next: (data) => {
+        this.borrowedBooks = data.map(item => ({
+          bookName: item.book.name,
+          authorName: item.book.author?.fullname || 'Không rõ',
+          genre: item.book.genres?.name || '---',       
+          publishYear: item.book.publishYear,
+          borrowedDate: item.createdDate,
+          returnDueDate: item.returnDueDate,       
+          actualReturnDate: item.actualReturnDate, 
+          returned: item.returned                  
+        }));
+        this.showModal = true; 
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy sách đã mượn:', err);
+        alert('Không thể lấy danh sách sách đã mượn.');
+      }
+    });
+  }
+
+  closeModal(): void {
+    this.showModal = false; 
+  }
+
+  openEditUserForm(user: User): void {
+    this.selectedUser = { ...user };
+    this.showEditForm = true;
+  }
+  
+  saveUser(): void {
+    if (!this.selectedUser) return;
+  
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      this.errorMessage = 'Bạn chưa đăng nhập!';
+      return;
+    }
+  
+    const headers = { Authorization: `Bearer ${token}` };
+    const url = `${environment.apiUrl}/system/update-user`;
+  
+    this.http.post<User>(url, this.selectedUser, { headers }).subscribe({
+      next: (data) => {
+        const index = this.users.findIndex((u) => u.id === this.selectedUser?.id);
+        if (index !== -1) {
+          this.users[index] = data; 
+        }
+        this.updatePagination();
+        this.closeEditForm();
+        this.actionSuccessMessage = 'Cập nhật thông tin người dùng thành công!';
+      },
+      error: (err) => {
+        this.errorMessage = err.error ? err.error : 'Đã xảy ra lỗi khi cập nhật người dùng.';
+      },
+    });
+  }
+  
+  closeEditForm(): void {
+    this.showEditForm = false;
+    this.selectedUser = null;
+    this.errorMessage = null;
+  }
 
   openSendNotificationForm(user: User): void {
     this.selectedUser = { ...user };
@@ -192,37 +185,25 @@ export class UserComponent implements OnInit {
   }
 
   sendNotificationToUser(): void {
-    if (!this.selectedUser) {
-      alert('Không có người dùng được chọn.');
-      return;
-    }
+    if (!this.selectedUser) return;
   
     const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Bạn cần đăng nhập để thực hiện chức năng này.');
-      return;
-    }
+    if (!token) return;
   
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-  
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     const url = `${environment.apiUrl}/admin/send-notification?userId=${this.selectedUser.id}&content=${encodeURIComponent(this.notificationContent)}`;
   
     this.http.post(url, {}, { headers, responseType: 'text' }).subscribe({
       next: (response: string) => {
-        alert(response);
         this.closeOverlay();
+        this.actionSuccessMessage = 'Đã gửi thông báo thành công!';
       },
       error: (err) => {
-        console.error('Lỗi khi gọi API:', err);
+        console.error('Lỗi khi gửi thông báo:', err);
         alert('Không thể gửi thông báo. Vui lòng thử lại.');
       },
     });
   }
-  
-  
-  
 
   closeOverlay(): void {
     this.sendNotification = false;
@@ -230,4 +211,7 @@ export class UserComponent implements OnInit {
     this.selectedUser = null;
   }
 
+  closeSuccessModal(): void {
+    this.actionSuccessMessage = '';
+  }
 }

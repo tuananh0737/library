@@ -27,7 +27,7 @@ export class AuthorComponent implements OnInit {
   updateSuccessful: boolean = false;
 
   currentPage: number = 1;
-  pageSize: number = 10;
+  pageSize: number = 20;
   totalPages: number = 1;
 
   searchQuery: string = '';
@@ -129,7 +129,6 @@ export class AuthorComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    // TỐI ƯU: Đổi sang /system/
     const url = `${environment.apiUrl}/system/delete-author?id=${authorId}`;
 
     this.http.delete(url, { headers }).subscribe({
@@ -140,7 +139,7 @@ export class AuthorComponent implements OnInit {
       },
       error: (err) => {
         console.error('Lỗi khi xóa tác giả:', err);
-        alert('Đã xảy ra lỗi khi xóa tác giả.');
+        alert('Đã xảy ra lỗi khi xóa tác giả. Có thể tác giả đang có sách trong thư viện.');
       },
     });
   }

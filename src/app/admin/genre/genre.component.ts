@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
-
 interface Genre {
   id: number;
   name: string;
@@ -27,7 +26,7 @@ export class GenreComponent implements OnInit {
   updateSuccessful: boolean = false;
 
   currentPage: number = 1;
-  pageSize: number = 10;
+  pageSize: number = 20;
   totalPages: number = 1;
 
   searchQuery: string = '';
@@ -55,7 +54,7 @@ export class GenreComponent implements OnInit {
           genre.name.toLowerCase().includes(this.searchQuery.toLowerCase())
         )
       : this.genres;
-    this.totalPages = Math.ceil(filtered.length / this.pageSize);
+    this.totalPages = Math.ceil(filtered.length / this.pageSize) || 1;
     const startIndex = (this.currentPage - 1) * this.pageSize;
     this.paginatedGenres = filtered.slice(startIndex, startIndex + this.pageSize);
   }
@@ -110,8 +109,8 @@ export class GenreComponent implements OnInit {
         this.updateSuccessful = true;
       },
       error: (err) => {
-        console.error('Lỗi khi lưu tác giả:', err);
-        alert('Đã xảy ra lỗi khi lưu tác giả.');
+        console.error('Lỗi khi lưu thể loại:', err);
+        alert('Đã xảy ra lỗi khi lưu thể loại.');
       },
     });
   }
@@ -138,8 +137,8 @@ export class GenreComponent implements OnInit {
         this.deleteSuccessful = true;
       },
       error: (err) => {
-        console.error('Lỗi khi xóa tác giả:', err);
-        alert('Đã xảy ra lỗi khi xóa tác giả.');
+        console.error('Lỗi khi xóa thể loại:', err);
+        alert('Đã xảy ra lỗi khi xóa thể loại. Thể loại này có thể đang chứa sách.');
       },
     });
   }

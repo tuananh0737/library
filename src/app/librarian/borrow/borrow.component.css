@@ -1,160 +1,29 @@
-.modal-title {
-    font-size: 18px;
-  }
+.dropdown-results {
+  z-index: 1050; 
+  max-height: 250px; 
+  overflow-y: auto;
+  margin-top: 2px;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
 
-  .container {
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2, h3 {
-    font-family: 'Arial', sans-serif;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .btn-primary, .btn-success, .btn-danger {
-    font-size: 1rem;
-    padding: 10px 20px;
-    border-radius: 5px;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .btn-primary:hover, .btn-success:hover, .btn-danger:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .modal-content {
-    border-radius: 10px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-  }
-  
-  .table thead th {
-    text-align: center;
-    font-weight: bold;
-    color: #555;
-    background-color: #e9ecef;
-  }
-  
-  .table tbody td {
-    vertical-align: middle;
-    text-align: center;
-  }
-  
-  .list-group-item {
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-  }
-  
-  .list-group-item:hover {
-    background-color: #f1f1f1;
-  }
-  
-  .alert {
-    animation: fadeIn 1s ease-in-out;
-  }
-  
-  .text-muted {
-    color: #6c757d !important;
-  }
-  
-  .fst-italic {
-    font-style: italic;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  .modal-header {
-    background-color: #007bff;
-    color: #fff;
-  }
-  
-  .modal-content {
-    border-radius: 12px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-  }
-  
-  .list-group-item {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    transition: all 0.3s;
-  }
-  
-  .list-group-item:hover {
-    background-color: #f9f9f9;
-  }
-  
-  .list-group-item.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #0056b3;
-  }
-  
-  .alert-info {
-    background-color: #e9f7fd;
-    border-color: #b8daff;
-    color: #31708f;
-    font-size: 1rem;
-  }
-  
-  .input-group input {
-    border-radius: 8px 0 0 8px;
-  }
-  
-  .input-group .btn {
-    border-radius: 0 8px 8px 0;
-  }
-  
-  .btn {
-    font-size: 1rem;
-    padding: 10px 15px;
-  }
-  
-  .table-hover tbody tr:hover {
-    background-color: #f1f1f1;
-  }
-  
-  .table-bordered {
-    border-radius: 10px;
-  }
-  
-  h2 {
-    font-family: 'Arial', sans-serif;
-    font-weight: bold;
-    text-transform: uppercase;
-    position: relative;
-    text-align: center;
-    color: #007bff;
-  }
-  
-  h2::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, #007bff, #00d4ff, #007bff);
-    animation: shine 2s linear infinite;
-  }
+.nav-pills .nav-link {
+  color: #495057;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  margin: 0 5px;
+}
 
-  @keyframes shine {
-    0% {
-      background-position: 0% 50%;
-    }
-    100% {
-      background-position: 100% 50%;
-    }
-  }
-  
+.nav-pills .nav-link.active {
+  background-color: #0d6efd;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+  background-color: #e9ecef;
+}
+
+.table-hover tbody tr {
+  transition: background-color 0.2s ease;
+}

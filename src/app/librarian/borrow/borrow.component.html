@@ -1,135 +1,226 @@
-<div class="container mt-5">
-  <h2 class="text-center mb-4 position-relative">
-    <span class="title-decoration">Thông tin mượn sách</span>
-  </h2>  
-    <div class="row justify-content-center">
-      <div class="col-lg-6 col-md-8 text-center">
-        <button class="btn btn-primary mb-4" (click)="openUserSelector()">
-          Chọn người dùng
-        </button>
-      </div>
-    </div>
-  
-    <!-- Modal Chọn Người Dùng -->
-    <div *ngIf="isUserSelectorVisible" class="modal fade show d-block" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title">Chọn người dùng</h5>
-            <button type="button" class="btn-close btn-close-white" (click)="closeUserSelector()"></button>
+<div class="container mt-4 mb-5">
+  <div class="section-header mb-4 text-center">
+    <h2><i class="bi bi-journal-text text-primary me-2"></i>Quản lý Mượn / Trả Sách</h2>
+  </div>
+
+  <ul class="nav nav-pills justify-content-center mb-4 shadow-sm bg-white p-2 rounded">
+    <li class="nav-item">
+      <a class="nav-link fs-5 fw-bold" [class.active]="activeTab === 'lend'" (click)="switchTab('lend')" style="cursor: pointer;">
+        <i class="bi bi-cart-plus me-1"></i> Cho Mượn Sách
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link fs-5 fw-bold" [class.active]="activeTab === 'return'" (click)="switchTab('return')" style="cursor: pointer;">
+        <i class="bi bi-arrow-return-left me-1"></i> Trả Sách / Lịch Sử
+      </a>
+    </li>
+  </ul>
+
+  <div *ngIf="activeTab === 'lend'">
+    <div class="row">
+      <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm h-100 border-primary">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">1. Chọn Sách</h5>
+            <button class="btn btn-sm btn-light" (click)="openQRScanner()"><i class="bi bi-qr-code-scan"></i> Quét QR</button>
           </div>
-          <div class="modal-body">
-            <!-- Input tìm kiếm -->
-            <div class="input-group mb-4">
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="searchParam"
-                placeholder="Tìm kiếm người dùng (Tên, ID Card, SĐT)"
-              />
-              <button class="btn btn-primary" (click)="searchUsers()">Tìm kiếm</button>
+          <div class="card-body">
+            <div class="position-relative mb-3" *ngIf="!selectedBook">
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control form-control-lg" 
+                       [(ngModel)]="searchBookParam" 
+                       (input)="onSearchBook()" 
+                       placeholder="Nhập tên sách hoặc ID sách...">
+              </div>
+              
+              <ul class="list-group position-absolute w-100 shadow dropdown-results" *ngIf="booksSearchList.length > 0">
+                <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" 
+                        *ngFor="let book of booksSearchList" (click)="selectBook(book)">
+                  <span>{{ book.name }} <small class="text-muted">({{ book.author?.fullname || 'Không rõ tác giả' }})</small></span>
+                  <span class="badge" [ngClass]="book.quantity > 0 ? 'bg-success' : 'bg-danger'">
+                    Còn: {{ book.quantity }}
+                  </span>
+                </button>
+              </ul>
             </div>
-    
-            <!-- Hiển thị danh sách người dùng sau khi tìm kiếm -->
-            <div *ngIf="users.length > 0" class="list-group">
-              <button
-                type="button"
-                class="list-group-item list-group-item-action"
-                [class.active]="user.id === selectedUserId"
-                *ngFor="let user of users"
-                (click)="selectUser(user)"
-              >
-                {{ user.fullname }} - <span class="text-muted">{{ user.idCard }}</span> - {{ user.phone }}
+
+            <div class="alert alert-success d-flex justify-content-between align-items-center shadow-sm" *ngIf="selectedBook">
+              <div>
+                <h5 class="mb-1 text-success"><i class="bi bi-check-circle-fill"></i> {{ selectedBook.name }}</h5>
+                <p class="mb-0 text-muted">Số lượng trong kho: <strong>{{ selectedBook.quantity }}</strong></p>
+              </div>
+              <button class="btn btn-sm btn-outline-danger" (click)="clearSelectedBook()"><i class="bi bi-x-circle"></i> Đổi sách</button>
+            </div>
+            
+            <div *ngIf="selectedBook && selectedBook.quantity <= 0" class="alert alert-danger mt-2">
+              <i class="bi bi-exclamation-triangle-fill"></i> Sách này đã hết, không thể cho mượn!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm h-100 border-info">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">2. Người Mượn & Xác Nhận</h5>
+          </div>
+          <div class="card-body">
+            <div class="position-relative mb-3" *ngIf="!selectedUserLend">
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-person-bounding-box"></i></span>
+                <input type="text" class="form-control form-control-lg" 
+                       [(ngModel)]="searchUserLendParam" 
+                       (input)="onSearchUserLend()" 
+                       placeholder="Nhập Tên, CCCD hoặc SĐT...">
+              </div>
+              
+              <ul class="list-group position-absolute w-100 shadow dropdown-results" *ngIf="usersSearchLendList.length > 0">
+                <button class="list-group-item list-group-item-action" 
+                        *ngFor="let user of usersSearchLendList" (click)="selectUserLend(user)">
+                  <strong>{{ user.fullname }}</strong> - <span class="text-muted">{{ user.idCard }}</span> - {{ user.phone }}
+                </button>
+              </ul>
+            </div>
+
+            <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm" *ngIf="selectedUserLend">
+              <div>
+                <h5 class="mb-1 text-info"><i class="bi bi-person-check-fill"></i> {{ selectedUserLend.fullname }}</h5>
+                <p class="mb-0 text-muted">SĐT: {{ selectedUserLend.phone }}</p>
+              </div>
+              <button class="btn btn-sm btn-outline-danger" (click)="clearSelectedUserLend()"><i class="bi bi-x-circle"></i> Đổi người</button>
+            </div>
+
+            <hr *ngIf="selectedBook && selectedUserLend">
+
+            <div *ngIf="selectedBook && selectedUserLend" class="bg-light p-3 rounded border">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="fw-bold">Sách mượn:</span>
+                <span class="text-primary text-end">{{ selectedBook.name }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="fw-bold">Người mượn:</span>
+                <span class="text-info text-end">{{ selectedUserLend.fullname }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="fw-bold">Ngày mượn:</span>
+                <span class="text-success text-end">Hôm nay</span>
+              </div>
+              <div class="d-flex justify-content-between mb-3">
+                <span class="fw-bold">Hạn trả:</span>
+                <span class="text-danger fw-bold text-end">+10 Ngày</span>
+              </div>
+              
+              <button class="btn btn-primary btn-lg w-100 shadow-sm" 
+                      [disabled]="selectedBook.quantity <= 0 || isSubmitting" 
+                      (click)="submitBorrow()">
+                <span *ngIf="!isSubmitting"><i class="bi bi-check2-circle"></i> XÁC NHẬN CHO MƯỢN</span>
+                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm"></span> Đang xử lý...
               </button>
             </div>
-    
-            <!-- Thông báo không có người dùng -->
-            <div *ngIf="users.length === 0">
-              <p class="text-center text-muted fst-italic">Không tìm thấy người dùng.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'return'">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h4 class="card-title text-center mb-4">Tìm kiếm người dùng để trả sách</h4>
+        
+        <div class="row justify-content-center mb-4" *ngIf="!selectedUserReturnId">
+          <div class="col-md-8 position-relative">
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control form-control-lg"
+                     [(ngModel)]="searchUserReturnParam"
+                     (input)="onSearchUserReturn()"
+                     placeholder="Tìm kiếm người dùng (Tên, CCCD, SĐT)..." />
+            </div>
+            
+            <div class="list-group position-absolute w-100 shadow dropdown-results" *ngIf="usersReturnList.length > 0">
+              <button type="button" class="list-group-item list-group-item-action"
+                      *ngFor="let user of usersReturnList" (click)="selectUserReturn(user)">
+                <strong>{{ user.fullname }}</strong> - <span class="text-muted">{{ user.idCard }}</span> - {{ user.phone }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center" *ngIf="selectedUserReturnId">
+          <div class="col-md-8 text-center">
+            <div class="alert alert-info p-3 shadow-sm d-flex justify-content-between align-items-center">
+              <span><strong>Đang xem:</strong> {{ selectedUserReturnName }}</span>
+              <button class="btn btn-sm btn-outline-danger" (click)="clearSelectedUserReturn()">Đổi người</button>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- Thông tin người dùng được chọn -->
-    <div class="row justify-content-center" *ngIf="selectedUserId">
-      <div class="col-lg-6 col-md-8 text-center">
-        <div class="alert alert-info p-3 shadow-sm">
-          <p class="mb-2"><strong>Người dùng:</strong> {{ selectedUserName }}</p>
-        </div>
-        <button class="btn btn-success" (click)="fetchBorrowBooks()">Tìm kiếm sách đã mượn</button>
-      </div>
-    </div>
-  
-    <!-- Kết quả mượn sách -->
-    <div *ngIf="borrowBooks.length > 0" class="row mt-4">
-      <div class="col-12">
-        <h3 class="text-center mb-4">Kết quả</h3>
-        <div class="table-responsive">
-          <table class="table table-bordered table-hover">
+
+    <div class="card shadow-sm" *ngIf="selectedUserReturnId">
+      <div class="card-body">
+        <h5 class="card-title text-center mb-3">Lịch sử mượn sách của thành viên</h5>
+        
+        <div *ngIf="borrowBooks.length > 0" class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
-              <tr>
+              <tr class="text-center">
                 <th>#</th>
                 <th>Tên sách</th>
                 <th>Ngày mượn</th>
-                <th>Ngày phải trả</th>
-                <th>Ngày trả (nếu có)</th>
+                <th>Hạn trả</th>
+                <th>Ngày trả</th>
                 <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let book of borrowBooks; index as i">
+              <tr *ngFor="let book of borrowBooks; index as i" class="text-center">
                 <td>{{ i + 1 }}</td>
-                <td>{{ book.book.name }}</td>
-                <td>{{ book.createdDate }}</td>
-                <td>{{ book.returnDueDate }}</td>
-                <td>{{ book.actualReturnDate || 'Chưa trả' }}</td>
+                <td class="text-start fw-bold text-primary">{{ book.book.name }}</td>
+                <td>{{ book.createdDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="text-danger">{{ book.returnDueDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ book.actualReturnDate ? (book.actualReturnDate | date:'dd/MM/yyyy HH:mm') : '---' }}</td>
                 <td>
-                  <button
-                    class="btn btn-success btn-sm"
-                    [disabled]="book.returned"
-                    (click)="openConfirmationDialog(book.id, book.book.name)"
-                  >
-                    {{ book.returned ? 'Đã trả' : 'Trả sách' }}
+                  <span *ngIf="book.returned" class="badge bg-success px-3 py-2"><i class="bi bi-check-circle"></i> Đã trả</span>
+                  <button *ngIf="!book.returned" 
+                          class="btn btn-outline-danger btn-sm px-3"
+                          (click)="openConfirmationDialog(book.id, book.book.name)">
+                    <i class="bi bi-arrow-return-left"></i> Trả sách
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        <div *ngIf="borrowBooks.length === 0" class="text-center mt-4">
+          <p class="text-muted fst-italic"><i class="bi bi-inbox fs-4 d-block mb-2"></i> Thành viên này không có sách đang mượn.</p>
+        </div>
       </div>
     </div>
-  
-    <!-- Không có dữ liệu -->
-    <div *ngIf="borrowBooks.length === 0 && selectedUserId" class="row">
-      <div class="col-12 text-center mt-4">
-        <p class="text-muted fst-italic">Không có dữ liệu.</p>
-      </div>
-    </div>
-  
-    <!-- Modal xác nhận trả sách -->
-    <div *ngIf="isConfirmationVisible" class="modal fade show d-block">
+
+    <div *ngIf="isConfirmationVisible" class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Xác nhận trả sách</h5>
-            <button type="button" class="btn-close" (click)="closeConfirmationDialog()"></button>
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Xác nhận trả sách</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="closeConfirmationDialog()"></button>
           </div>
-          <div class="modal-body">
-            <p>Bạn có chắc chắn muốn trả sách "<strong>{{ bookNameToReturn }}</strong>"?</p>
+          <div class="modal-body fs-5">
+            Xác nhận trả sách "<strong class="text-danger">{{ bookNameToReturn }}</strong>"?
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" (click)="closeConfirmationDialog()">Hủy</button>
-            <button class="btn btn-danger" (click)="confirmReturnBook()">Đồng ý</button>
+            <button class="btn btn-danger" (click)="confirmReturnBook()">Đồng ý Trả</button>
           </div>
         </div>
       </div>
     </div>
   
-    <!-- Thông báo trả sách thành công -->
-    <div *ngIf="isSuccessMessageVisible" class="alert alert-success mt-4 text-center shadow-sm">
-      Sách "<strong>{{ bookNameToReturn }}</strong>" đã được trả thành công!
+    <div *ngIf="isSuccessMessageVisible" class="alert alert-success position-fixed bottom-0 end-0 m-4 shadow" style="z-index: 9999;">
+      <i class="bi bi-check-circle-fill"></i> Trả sách "<strong>{{ bookNameToReturn }}</strong>" thành công!
     </div>
   </div>
-  
+</div>

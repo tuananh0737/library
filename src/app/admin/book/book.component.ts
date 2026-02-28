@@ -33,24 +33,29 @@ export class BookComponent implements OnInit {
   itemsPerPage: number = 30; 
   totalPages: number = 1;
 
+  // Variables for Add/Edit/Delete
   updateSuccessful: boolean = false;
-  showBorrowBook: boolean = false;
   showAddBookForm: boolean = false; 
   showDeleteConfirm: boolean = false;
   deleteSuccessful: boolean = false;
   bookToDeleteId: number | null = null;
-
-  users: { id: number; fullname: string; idCard: string; phone: string }[] = [];
-  userSearchQuery: string = '';
-  selectedUserId: number | null = null;
   authors: { id: number; fullname: string }[] = [];
   genres: { id: number; name: string }[] = [];
 
   newBook: Book = {
-    id: 0, name: '', numberPage: 0, publishYear: 0, description: '', quantity: 0,
+    id: 0, name: '', image: '', numberPage: 0, publishYear: 0, description: '', quantity: 0,
     author: { id: 0, fullname: '', nationality: '' }, genres: { id: 0, name: '' },
     qrCode: '', location: { id: 0, room: '', shelf: ''}
   };
+
+  // Variables for Borrow Book (Split-Pane Auto-complete)
+  showBorrowBook: boolean = false;
+  users: any[] = [];
+  userSearchQuery: string = '';
+  selectedUserId: number | null = null;
+  selectedUserObj: any = null;
+  searchUserTimeout: any;
+  isSubmittingBorrow: boolean = false;
 
   constructor(private bookService: BookService, private http: HttpClient) {}
 
@@ -103,37 +108,87 @@ export class BookComponent implements OnInit {
     this.loadBooks();
   }
 
-  borrow(book: Book): void {
-    this.selectedBook = book; this.showBorrowBook = true; this.userSearchQuery = ''; this.users = [];
+  // ==========================================
+  // XỬ LÝ MƯỢN SÁCH TỐI ƯU
+  // ==========================================
+  borrow(book: Book): void { 
+    this.selectedBook = book; 
+    this.showBorrowBook = true; 
+    
+    // Đóng Modal chi tiết nếu đang mở
+    this.closeForm(); 
+    this.selectedBook = book; 
+
+    this.userSearchQuery = ''; 
+    this.users = []; 
+    this.selectedUserId = null;
+    this.selectedUserObj = null;
   }
 
-  searchUser(): void {
+  onSearchUser(): void {
+    clearTimeout(this.searchUserTimeout);
     const query = this.userSearchQuery.trim();
-    if (!query) { alert('Vui lòng nhập từ khóa!'); return; }
+    if (!query) { this.users = []; return; }
+
     const token = localStorage.getItem('authToken');
     if (!token) return;
-    this.http.post<any[]>(`${environment.apiUrl}/system/search-user`, { param: query }, { headers: { Authorization: `Bearer ${token}` } })
-      .subscribe({
-        next: (data) => { this.users = data; if (this.users.length === 0) alert('Không tìm thấy người dùng nào.'); },
-        error: (err) => console.error(err)
-      });
+
+    this.searchUserTimeout = setTimeout(() => {
+      this.http.post<any[]>(`${environment.apiUrl}/system/search-user`, { param: query }, { headers: { Authorization: `Bearer ${token}` } })
+        .subscribe({ 
+          next: (data) => { this.users = data; }, 
+          error: (err) => console.error(err) 
+        });
+    }, 300);
   }
 
-  selectUser(userId: number): void { this.selectedUserId = userId; }
+  selectUserObj(user: any): void { 
+    this.selectedUserId = user.id; 
+    this.selectedUserObj = user;
+    this.userSearchQuery = ''; 
+    this.users = []; 
+  }
+
+  clearSelectedUser(): void {
+    this.selectedUserId = null;
+    this.selectedUserObj = null;
+  }
 
   confirmBorrow(): void {
     if (!this.selectedUserId || !this.selectedBook) { alert('Vui lòng chọn sách và người dùng!'); return; }
+    
+    this.isSubmittingBorrow = true;
     const token = localStorage.getItem('authToken');
-    if (!token) return;
+    if (!token) { this.isSubmittingBorrow = false; return; }
+
     this.http.post(`${environment.apiUrl}/system/add-borrowBook`, { user: { id: this.selectedUserId }, book: { id: this.selectedBook.id } }, { headers: { Authorization: `Bearer ${token}` } })
       .subscribe({
-        next: () => { alert('Mượn sách thành công!'); this.showBorrowBook = false; this.selectedUserId = null; },
-        error: (err) => { console.error(err); alert('Lỗi mượn sách!'); }
+        next: () => { 
+          alert(`Mượn sách thành công cho độc giả ${this.selectedUserObj.fullname}!`); 
+          this.isSubmittingBorrow = false;
+          this.closeBorrowBookForm(); 
+          this.loadBooks(); 
+        },
+        error: (err) => { 
+          console.error(err); 
+          this.isSubmittingBorrow = false;
+          alert(err.error?.message || 'Lỗi mượn sách!'); 
+        }
       });
   } 
 
-  closeBorrowBookForm(): void { this.showBorrowBook = false; this.selectedBook = null; this.selectedUserId = null; }
+  closeBorrowBookForm(): void { 
+    this.showBorrowBook = false; 
+    this.selectedBook = null; 
+    this.selectedUserId = null; 
+    this.selectedUserObj = null;
+    this.userSearchQuery = '';
+    this.users = [];
+  }
   
+  // ==========================================
+  // XỬ LÝ QUẢN TRỊ (XEM, THÊM, SỬA, XÓA)
+  // ==========================================
   trackByBookId(index: number, book: Book): number { return book.id; }
   
   showDetails(book: Book): void { this.selectedBook = book; }
@@ -149,6 +204,16 @@ export class BookComponent implements OnInit {
   
   openEditBookForm(book: Book): void { 
     this.newBook = { ...book }; 
+    
+    // Đề phòng trường hợp sách cũ chưa có location
+    if (!this.newBook.location) {
+      this.newBook.location = { id: 0, room: '', shelf: '' };
+    }
+    
+    // Nếu sách cũ chưa chọn tác giả/thể loại thì set = 0 để form hiển thị default
+    if (!this.newBook.author) this.newBook.author = { id: 0, fullname: '', nationality: '' };
+    if (!this.newBook.genres) this.newBook.genres = { id: 0, name: '' };
+
     this.showAddBookForm = true; 
   }
 
@@ -168,10 +233,7 @@ export class BookComponent implements OnInit {
     };
 
     delete payload.qrCode;
-    
-    if (payload.id === 0) {
-      payload.id = null;
-    }
+    if (payload.id === 0) payload.id = null;
 
     this.http.post<Book>(`${environment.apiUrl}/system/add-update-book`, payload, { 
       headers: { Authorization: `Bearer ${token}` } 
@@ -193,10 +255,21 @@ export class BookComponent implements OnInit {
   }
 
   resetNewBookForm(): void { 
-    this.newBook = { id: 0, name: '', numberPage: 0, publishYear: 0, description: '', quantity: 0, author: { id: 0, fullname: '', nationality: '' }, genres: { id: 0, name: '' }, qrCode: '', location: { id: 0, room: '', shelf: ''} }; 
+    this.newBook = { 
+      id: 0, 
+      name: '', 
+      image: '', 
+      numberPage: 0, 
+      publishYear: 0, 
+      description: '', 
+      quantity: 0, 
+      author: { id: 0, fullname: '', nationality: '' }, 
+      genres: { id: 0, name: '' }, 
+      qrCode: '', 
+      location: { id: 0, room: '', shelf: ''} 
+    }; 
   }
 
-  // === XỬ LÝ XÓA SÁCH ===
   deleteBook(bookId: number): void { this.bookToDeleteId = bookId; this.showDeleteConfirm = true; }
   
   confirmDelete(): void {
@@ -204,7 +277,6 @@ export class BookComponent implements OnInit {
     const token = localStorage.getItem('authToken');
     if (!token) return;
 
-    // Gọi API /system/delete-book
     this.http.delete(`${environment.apiUrl}/system/delete-book?id=${this.bookToDeleteId}`, { 
       headers: { Authorization: `Bearer ${token}` } 
     }).subscribe({
@@ -217,14 +289,18 @@ export class BookComponent implements OnInit {
       error: (err) => { 
         console.error(err); 
         this.showDeleteConfirm = false; 
-        alert('Lỗi khi xóa sách!');
+        alert('Lỗi khi xóa sách! Có thể sách đang được mượn.');
       }
     });
   }
 
-  cancelDelete(): void { this.showDeleteConfirm = false; this.bookToDeleteId = null; this.deleteSuccessful = false; this.updateSuccessful = false; }
+  cancelDelete(): void { 
+    this.showDeleteConfirm = false; 
+    this.bookToDeleteId = null; 
+    this.deleteSuccessful = false; 
+    this.updateSuccessful = false; 
+  }
   
-  // === TẢI DANH MỤC ===
   loadAuthorsAndGenres(): void {
     const token = localStorage.getItem('authToken');
     if (!token) return;
