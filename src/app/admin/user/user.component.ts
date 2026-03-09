@@ -19,9 +19,9 @@ interface BorrowedBook {
   genre: string;
   publishYear: number;
   borrowedDate: string;
-  returnDueDate: string;     // Hạn trả
-  actualReturnDate: string;  // Ngày trả thực tế
-  returned: boolean;         // Trạng thái đã trả
+  returnDueDate: string;     
+  actualReturnDate: string; 
+  returned: boolean;         
 }
 
 @Component({

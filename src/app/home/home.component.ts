@@ -14,7 +14,6 @@ export class HomeComponent implements OnInit {
   selectedBook: any = null;
   myBookmarks: any[] = [];
   
-  // --- Tìm kiếm & Lọc ---
   searchQuery: string = '';
   activeCategory: string = 'All';
   categories = ['All', 'Kinh dị', 'Khoa học', 'Văn học', 'Lịch sử', 'Công nghệ', 'Tiểu thuyết'];
@@ -29,14 +28,12 @@ export class HomeComponent implements OnInit {
     'Tiểu thuyết': 6
   };
 
-  // --- Phân trang Backend & Loading ---
   currentPage: number = 1;
   itemsPerPage: number = 30;
   totalPages: number = 0;
   
-  isLoading: boolean = false; // BỔ SUNG TRẠNG THÁI LOADING
+  isLoading: boolean = false; 
 
-  // --- Bình luận ---
   showReviewModal: boolean = false;
   tempRating: number = 0;
   tempHoverRating: number = 0;
@@ -71,9 +68,8 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // === TẢI DỮ LIỆU TỪ SERVER (CÓ LOADING) ===
   loadBooks(): void {
-    this.isLoading = true; // Bật loading
+    this.isLoading = true; 
     const pageRequest = this.currentPage - 1; 
     const isSearching = this.searchQuery.trim() !== '' || this.activeCategory !== 'All';
 
@@ -87,22 +83,22 @@ export class HomeComponent implements OnInit {
       this.bookService.searchBooks(searchData, pageRequest, this.itemsPerPage).subscribe({
         next: (data: any) => {
           this.handleBookData(data);
-          this.isLoading = false; // Tắt loading
+          this.isLoading = false; 
         },
         error: (err) => {
           console.error(err);
-          this.isLoading = false; // Tắt loading khi lỗi
+          this.isLoading = false; 
         }
       });
     } else {
       this.bookService.getBooks(pageRequest, this.itemsPerPage).subscribe({
         next: (data: any) => {
           this.handleBookData(data);
-          this.isLoading = false; // Tắt loading
+          this.isLoading = false; 
         },
         error: (err) => {
           console.error(err);
-          this.isLoading = false; // Tắt loading khi lỗi
+          this.isLoading = false; 
         }
       });
     }
@@ -122,7 +118,6 @@ export class HomeComponent implements OnInit {
     this.updateFavoriteStatus();
   }
 
-  // === CÁC HÀM XỬ LÝ SỰ KIỆN ===
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -204,7 +199,6 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/borrow'], { queryParams: { bookId: bookId } });
   }
 
-  // === XỬ LÝ BÌNH LUẬN ===
   loadBookComments(bookId: number): void {
     this.commentService.getCommentsByBook(bookId).subscribe({
       next: (data: any[]) => {

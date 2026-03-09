@@ -33,7 +33,6 @@ export class BookComponent implements OnInit {
   itemsPerPage: number = 30; 
   totalPages: number = 1;
 
-  // Variables for Add/Edit/Delete
   updateSuccessful: boolean = false;
   showAddBookForm: boolean = false; 
   showDeleteConfirm: boolean = false;
@@ -48,7 +47,6 @@ export class BookComponent implements OnInit {
     qrCode: '', location: { id: 0, room: '', shelf: ''}
   };
 
-  // Variables for Borrow Book (Split-Pane Auto-complete)
   showBorrowBook: boolean = false;
   users: any[] = [];
   userSearchQuery: string = '';
@@ -108,14 +106,10 @@ export class BookComponent implements OnInit {
     this.loadBooks();
   }
 
-  // ==========================================
-  // XỬ LÝ MƯỢN SÁCH TỐI ƯU
-  // ==========================================
   borrow(book: Book): void { 
     this.selectedBook = book; 
     this.showBorrowBook = true; 
     
-    // Đóng Modal chi tiết nếu đang mở
     this.closeForm(); 
     this.selectedBook = book; 
 
@@ -185,10 +179,7 @@ export class BookComponent implements OnInit {
     this.userSearchQuery = '';
     this.users = [];
   }
-  
-  // ==========================================
-  // XỬ LÝ QUẢN TRỊ (XEM, THÊM, SỬA, XÓA)
-  // ==========================================
+
   trackByBookId(index: number, book: Book): number { return book.id; }
   
   showDetails(book: Book): void { this.selectedBook = book; }
@@ -205,12 +196,10 @@ export class BookComponent implements OnInit {
   openEditBookForm(book: Book): void { 
     this.newBook = { ...book }; 
     
-    // Đề phòng trường hợp sách cũ chưa có location
     if (!this.newBook.location) {
       this.newBook.location = { id: 0, room: '', shelf: '' };
     }
     
-    // Nếu sách cũ chưa chọn tác giả/thể loại thì set = 0 để form hiển thị default
     if (!this.newBook.author) this.newBook.author = { id: 0, fullname: '', nationality: '' };
     if (!this.newBook.genres) this.newBook.genres = { id: 0, name: '' };
 

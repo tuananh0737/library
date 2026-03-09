@@ -47,24 +47,21 @@ button.btn {
   border-color: #0d6efd;
 }
 
-/* Làm mờ nền khi overlay xuất hiện */
 .overlay-content {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5); /* Nền mờ */
+  background-color: rgba(0, 0, 0, 0.5); 
   z-index: 1050;
 }
 
-/* Tùy chỉnh cho thẻ card */
 .overlay-content .card {
   width: 400px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Đổ bóng */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
 }
 
-/* Ẩn cuộn trang khi overlay mở */
 body.overlay-active {
   overflow: hidden;
 }

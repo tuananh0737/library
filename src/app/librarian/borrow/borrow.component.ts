@@ -8,12 +8,8 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./borrow.component.css']
 })
 export class BorrowComponent {
-  // Quản lý Tab: 'lend' (Cho mượn) | 'return' (Trả sách)
   activeTab: string = 'lend';
 
-  // ==========================================
-  // BIẾN CHO TAB: CHO MƯỢN SÁCH
-  // ==========================================
   searchBookParam: string = '';
   booksSearchList: any[] = [];
   selectedBook: any = null;
@@ -25,11 +21,8 @@ export class BorrowComponent {
   searchUserLendTimeout: any;
 
   isSubmittingLend: boolean = false;
-  showQRScanner: boolean = false; // Trạng thái bật/tắt Camera
+  showQRScanner: boolean = false;
 
-  // ==========================================
-  // BIẾN CHO TAB: TRẢ SÁCH
-  // ==========================================
   searchUserReturnParam: string = '';
   usersReturnList: any[] = [];
   selectedUserReturn: any = null;
@@ -40,7 +33,6 @@ export class BorrowComponent {
   bookIdToReturn: number | null = null;
   bookNameToReturn: string = '';
 
-  // Thông báo chung
   actionSuccessMessage: string = '';
 
   constructor(private http: HttpClient) {}
@@ -49,9 +41,6 @@ export class BorrowComponent {
     this.activeTab = tab;
   }
 
-  // ==========================================
-  // LOGIC: QUÉT MÃ QR TÌM SÁCH
-  // ==========================================
   openQRScanner() {
     this.showQRScanner = true;
   }
@@ -63,15 +52,13 @@ export class BorrowComponent {
   onCodeResult(result: string) {
     if (!result) return;
     
-    // Tắt camera ngay khi quét thành công
     this.closeQRScanner();
-    
-    // Gọi API tìm sách bằng mã QR vừa quét được
+
     const url = `${environment.apiUrl}/public/find-book-by-qr`;
     this.http.post(url, result, { responseType: 'json' }).subscribe({
       next: (book: any) => {
         if (book) {
-          this.selectBook(book); // Chọn luôn sách vào giỏ
+          this.selectBook(book); 
         } else {
           alert('Không tìm thấy sách tương ứng với mã QR này.');
         }
@@ -83,9 +70,6 @@ export class BorrowComponent {
     });
   }
 
-  // ==========================================
-  // LOGIC: TÌM KIẾM VÀ CHO MƯỢN SÁCH
-  // ==========================================
   onSearchBook() {
     clearTimeout(this.searchBookTimeout);
     if (!this.searchBookParam.trim()) { this.booksSearchList = []; return; }
@@ -155,9 +139,6 @@ export class BorrowComponent {
     });
   }
 
-  // ==========================================
-  // LOGIC: TÌM KIẾM VÀ TRẢ SÁCH
-  // ==========================================
   onSearchUserReturn() {
     clearTimeout(this.searchUserReturnTimeout);
     if (!this.searchUserReturnParam.trim()) { this.usersReturnList = []; return; }
@@ -177,7 +158,7 @@ export class BorrowComponent {
     this.selectedUserReturn = user;
     this.usersReturnList = [];
     this.searchUserReturnParam = '';
-    this.fetchBorrowBooks(); // Load sách đang mượn ngay lập tức
+    this.fetchBorrowBooks(); 
   }
 
   clearSelectedUserReturn() {
@@ -221,7 +202,7 @@ export class BorrowComponent {
     this.http.post(`${environment.apiUrl}/system/return-book?borrowBookId=${this.bookIdToReturn}`, {}, { headers, responseType: 'text' }).subscribe({
       next: () => {
         this.actionSuccessMessage = `Thu hồi sách "${this.bookNameToReturn}" thành công!`;
-        this.fetchBorrowBooks(); // Tải lại bảng sách
+        this.fetchBorrowBooks(); 
         this.closeConfirmationDialog();
       },
       error: (err) => {

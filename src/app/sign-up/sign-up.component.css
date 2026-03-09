@@ -1,11 +1,10 @@
-/* Tận dụng lại style của Login để nhất quán */
 .sign-up-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%); /* Blue gradient nhẹ */
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%); 
 }
 
 .sign-up-box {
@@ -13,7 +12,7 @@
   padding: 40px;
   border-radius: 24px;
   width: 100%;
-  max-width: 450px; /* Rộng hơn login một chút */
+  max-width: 450px; 
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   text-align: center;
 }
@@ -140,7 +139,6 @@ input:focus {
   text-decoration: underline;
 }
 
-/* OVERLAY STYLES - Làm mới cho đẹp hơn */
 .overlay {
   position: fixed;
   top: 0;
@@ -148,7 +146,7 @@ input:focus {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px); /* Hiệu ứng mờ nền phía sau */
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;

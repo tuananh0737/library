@@ -34,11 +34,9 @@ export class BookLibrarianComponent implements OnInit {
   itemsPerPage: number = 30; 
   totalPages: number = 1;
 
-  // Các biến cho Xóa Sách
   showDeleteConfirm: boolean = false;
   bookToDeleteId: number | null = null;
 
-  // Các biến cho Mượn Sách
   showBorrowBook: boolean = false;
   users: any[] = []; 
   userSearchQuery: string = '';
@@ -128,9 +126,6 @@ export class BookLibrarianComponent implements OnInit {
     this.selectedBook = null; 
   }
 
-  // ==========================================
-  // XỬ LÝ XÓA SÁCH
-  // ==========================================
   deleteBook(bookId: number): void { 
     this.bookToDeleteId = bookId; 
     this.showDeleteConfirm = true; 
@@ -163,14 +158,10 @@ export class BookLibrarianComponent implements OnInit {
     this.bookToDeleteId = null; 
   }
 
-  // ==========================================
-  // XỬ LÝ MƯỢN SÁCH TỐI ƯU
-  // ==========================================
   borrow(book: Book): void { 
     this.selectedBook = book; 
     this.showBorrowBook = true; 
     
-    // Nếu đang mở Modal chi tiết, đóng nó lại
     const bookDetailModal = document.getElementById('bookDetailModal');
     if(bookDetailModal) {
        this.closeForm(); 

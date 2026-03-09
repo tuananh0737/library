@@ -150,7 +150,7 @@ p {
 
 .book-details-grid .value {
   color: #343a40;
-  text-align: left /* Căn trái cho giá trị */
+  text-align: left 
 }
 
 .card-body {

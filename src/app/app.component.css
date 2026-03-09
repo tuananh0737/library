@@ -1,4 +1,3 @@
-/* --- ĐỊNH NGHĨA BIẾN (Để đảm bảo màu sắc hiển thị đúng) --- */
 :host {
   --bg-app: #f3f4f6;
   --bg-sidebar: #ffffff;
@@ -8,16 +7,14 @@
   --radius-btn: 8px;
 }
 
-/* --- LAYOUT CHÍNH (SỬA LỖI SCROLL) --- */
 .app-layout {
   display: flex;
-  height: 100vh; /* Cao bằng 100% màn hình */
+  height: 100vh;
   width: 100vw;
   background-color: var(--bg-app);
-  overflow: hidden; /* QUAN TRỌNG: Ngăn cuộn trang chính, chỉ cuộn sidebar/content */
+  overflow: hidden; 
 }
 
-/* --- SIDEBAR STYLES --- */
 .sidebar {
   width: 260px;
   background-color: var(--bg-sidebar);
@@ -25,9 +22,9 @@
   flex-direction: column;
   border-right: 1px solid #e5e7eb;
   padding: 24px;
-  flex-shrink: 0; /* Không cho sidebar bị co lại */
-  height: 100%; /* Full chiều cao */
-  overflow-y: auto; /* QUAN TRỌNG: Cho phép cuộn dọc sidebar nếu menu dài */
+  flex-shrink: 0;
+  height: 100%; 
+  overflow-y: auto;
 }
 
 .brand {
@@ -36,7 +33,7 @@
   gap: 12px;
   margin-bottom: 40px;
   padding-left: 12px;
-  text-decoration: none; /* Bỏ gạch chân nếu là thẻ a */
+  text-decoration: none; 
   flex-shrink: 0;
 }
 
@@ -64,7 +61,6 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  /* overflow-y: auto; -> Đã chuyển lên .sidebar để cuộn mượt hơn */
 }
 
 .group-title {
@@ -101,12 +97,11 @@
 }
 
 .nav-item.active {
-  background-color: #eff6ff; /* Màu xanh rất nhạt */
+  background-color: #eff6ff; 
   color: var(--primary-color);
   font-weight: 600;
 }
 
-/* --- USER PROFILE (ĐÁY SIDEBAR) --- */
 .user-profile {
   margin-top: auto;
   padding-top: 20px;
@@ -114,7 +109,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0; /* Giữ cố định ở đáy */
+  flex-shrink: 0; 
 }
 
 .profile-info {
@@ -167,20 +162,19 @@
   background-color: #fee2e2;
 }
 
-/* --- MAIN CONTENT (SỬA LỖI SCROLL) --- */
 .main-content {
   flex: 1;
-  height: 100%; /* Full chiều cao */
+  height: 100%; 
   
-  /* SỬA LỖI: Đổi từ hidden sang auto để hiện thanh cuộn */
+
   overflow-y: auto; 
   overflow-x: hidden;
   
   position: relative;
-  padding: 20px; /* Thêm padding để nội dung không sát lề */
+  padding: 20px;
 }
 
-/* --- NOTIFICATIONS --- */
+
 .notification-link {
   cursor: pointer;
   position: relative;
@@ -198,7 +192,7 @@
 
 .notification-menu {
   position: absolute;
-  left: 270px; /* Vị trí popup bên cạnh sidebar */
+  left: 270px;
   top: 60px;
   width: 340px;
   background-color: white;
@@ -298,8 +292,7 @@
   margin: 0;
 }
 
-/* --- OVERLAY (QUAN TRỌNG: Form đổi mật khẩu) --- */
-/* Class này bị thiếu trong file cũ của bạn, cần thêm vào để form hoạt động */
+
 .overlay {
   position: fixed;
   top: 0;

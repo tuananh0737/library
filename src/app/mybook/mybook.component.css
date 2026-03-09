@@ -1,4 +1,3 @@
-/* Sử dụng biến màu và style chung */
 .page-container {
   max-width: 900px;
   margin: 0 auto;
@@ -18,7 +17,6 @@
   margin: 0;
 }
 
-/* Style cho từng dòng sách (List Item) */
 .book-item {
   background: white;
   border: 1px solid #e5e7eb;
@@ -35,7 +33,7 @@
 .book-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0,0,0,0.06);
-  border-color: #3b82f6; /* Màu primary */
+  border-color: #3b82f6; 
 }
 
 .book-info h3 {
@@ -62,7 +60,6 @@
   font-size: 12px;
 }
 
-/* Nút xóa */
 .btn-delete {
   width: 40px;
   height: 40px;
@@ -82,7 +79,6 @@
   color: white;
 }
 
-/* Overlay Confirm */
 .overlay {
   position: fixed;
   top: 0;

@@ -142,7 +142,7 @@ export class AppComponent implements OnInit {
         this.successMessage = 'Đổi mật khẩu thành công!';
         setTimeout(() => {
              this.closeChangePasswordForm();
-             this.successMessage = ''; // Reset message
+             this.successMessage = '';
         }, 1500);
       },
       error: (err) => {
